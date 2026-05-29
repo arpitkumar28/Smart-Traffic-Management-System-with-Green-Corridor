@@ -70,6 +70,12 @@ class AnalyticsScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
+
+        _buildSectionHeader('Data Integration'),
+        const SizedBox(height: 12),
+        const _WireIntegrationCard(),
+
+        const SizedBox(height: 24),
         _buildSectionHeader('Traffic Volume (24h)'),
         const SizedBox(height: 12),
         const GlassCard(
@@ -116,6 +122,67 @@ class AnalyticsScreen extends StatelessWidget {
     return Text(
       title,
       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+    );
+  }
+}
+
+class _WireIntegrationCard extends StatelessWidget {
+  const _WireIntegrationCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Connected Sources',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF18F2FF).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: const Color(0xFF18F2FF).withOpacity(0.4)),
+                ),
+                child: const Text(
+                  'POWERED BY WIRE',
+                  style: TextStyle(color: Color(0xFF18F2FF), fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const _SourceItem(label: 'Traffic Dashboard'),
+          const _SourceItem(label: 'Weather Feed'),
+          const _SourceItem(label: 'Emergency Reports'),
+          const _SourceItem(label: 'Road Conditions'),
+          const _SourceItem(label: 'Public Alerts'),
+        ],
+      ),
+    );
+  }
+}
+
+class _SourceItem extends StatelessWidget {
+  final String label;
+  const _SourceItem({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle, color: Color(0xFF8CFF5A), size: 16),
+          const SizedBox(width: 12),
+          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+        ],
+      ),
     );
   }
 }

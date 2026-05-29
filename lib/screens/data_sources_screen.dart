@@ -66,7 +66,7 @@ class DataSourcesScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     Image.network(
-                      'https://api.placeholder.com/100/40', // Placeholder for Wire Logo
+                      'https://api.placeholder.com/100/40',
                       height: 40,
                       errorBuilder: (_, __, ___) => const Text(
                         'WIRE',

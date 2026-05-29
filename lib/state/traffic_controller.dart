@@ -6,6 +6,15 @@ import 'package:flutter/foundation.dart';
 import '../models/traffic_models.dart';
 import '../services/firebase_service.dart';
 
+enum EmergencyActivationStage {
+  none,
+  detecting,
+  analyzing,
+  optimizing,
+  synchronizing,
+  active
+}
+
 class TrafficController extends ChangeNotifier {
   final FirebaseTrafficService firebaseService = FirebaseTrafficService();
   final Random _random = Random();
@@ -16,6 +25,7 @@ class TrafficController extends ChangeNotifier {
   int avgWaitSeconds = 42;
   bool emergencyActive = false;
   int aiConfidence = 92;
+  EmergencyActivationStage activationStage = EmergencyActivationStage.none;
 
   String get networkFlowTrend => '+12%';
   String get vpmTrend => '↑ 5%';
@@ -132,7 +142,25 @@ class TrafficController extends ChangeNotifier {
   }
 
   Future<void> activateEmergencyMode() async {
+    activationStage = EmergencyActivationStage.detecting;
+    notifyListeners();
+    
+    await Future.delayed(const Duration(milliseconds: 800));
+    activationStage = EmergencyActivationStage.analyzing;
+    notifyListeners();
+    
+    await Future.delayed(const Duration(milliseconds: 800));
+    activationStage = EmergencyActivationStage.optimizing;
+    notifyListeners();
+    
+    await Future.delayed(const Duration(milliseconds: 800));
+    activationStage = EmergencyActivationStage.synchronizing;
+    notifyListeners();
+    
+    await Future.delayed(const Duration(milliseconds: 800));
+    
     emergencyActive = true;
+    activationStage = EmergencyActivationStage.active;
     emergency = const EmergencyEvent(
       vehicleId: 'A-204',
       route: ['SIG-04', 'SIG-01', 'SIG-02', 'SIG-05'],
@@ -155,6 +183,7 @@ class TrafficController extends ChangeNotifier {
 
   void deactivateEmergencyMode() {
     emergencyActive = false;
+    activationStage = EmergencyActivationStage.none;
     notifyListeners();
   }
 

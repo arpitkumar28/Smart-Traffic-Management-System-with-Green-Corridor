@@ -86,6 +86,17 @@ class _LiveMapScreenState extends State<LiveMapScreen> with SingleTickerProvider
                               if (controller.emergencyActive)
                                 const _EmergencyPulse(),
                               
+                              // Destination: Hospital
+                              const Positioned(
+                                right: 40,
+                                top: 60,
+                                child: _MapMarker(
+                                  icon: Icons.local_hospital,
+                                  color: Colors.blueAccent,
+                                  label: 'City Hospital',
+                                ),
+                              ),
+
                               // Moving Ambulance Icon
                               if (controller.emergencyActive)
                                 _AmbulanceMarker(progress: _ambulanceController.value),
@@ -97,7 +108,10 @@ class _LiveMapScreenState extends State<LiveMapScreen> with SingleTickerProvider
                                 return Positioned(
                                   left: 60.0 + index * 60,
                                   top: 380.0 - index * 70,
-                                  child: _SignalNode(signal: signal),
+                                  child: _SignalNode(
+                                    signal: signal, 
+                                    isEmergency: controller.emergencyActive && controller.emergency.route.contains(signal.id)
+                                  ),
                                 );
                               }),
                             ],
@@ -146,6 +160,45 @@ class _LiveMapScreenState extends State<LiveMapScreen> with SingleTickerProvider
           ),
         ),
         const SizedBox(height: 18),
+      ],
+    );
+  }
+}
+
+class _MapMarker extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+
+  const _MapMarker({required this.icon, required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: color.withOpacity(0.5), blurRadius: 10, spreadRadius: 2),
+            ],
+          ),
+          child: Icon(icon, color: Colors.white, size: 24),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.black87,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
     );
   }
@@ -208,20 +261,20 @@ class _MapPainter extends CustomPainter {
 
     if (emergencyActive) {
       final corridorPaint = Paint()
-        ..color = const Color(0xFF8CFF5A).withOpacity(0.4)
-        ..strokeWidth = 28
+        ..color = const Color(0xFF8CFF5A).withOpacity(0.15)
+        ..strokeWidth = 32
         ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round;
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
       canvas.drawPath(path, corridorPaint);
       
       final activePathPaint = Paint()
         ..color = const Color(0xFF8CFF5A)
-        ..strokeWidth = 4
+        ..strokeWidth = 6
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round;
         
-      // Extract a portion of the path based on progress? Too complex for CustomPainter demo
-      // Just draw the full path glowing
+      canvas.drawPath(path, activePathPaint);
     }
   }
 
@@ -229,42 +282,91 @@ class _MapPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-class _SignalNode extends StatelessWidget {
+class _SignalNode extends StatefulWidget {
   final dynamic signal;
-  const _SignalNode({required this.signal});
+  final bool isEmergency;
+  const _SignalNode({required this.signal, this.isEmergency = false});
+
+  @override
+  State<_SignalNode> createState() => _SignalNodeState();
+}
+
+class _SignalNodeState extends State<_SignalNode> with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    if (widget.isEmergency) _pulseController.repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(_SignalNode oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isEmergency && !oldWidget.isEmergency) {
+      _pulseController.repeat(reverse: true);
+    } else if (!widget.isEmergency && oldWidget.isEmergency) {
+      _pulseController.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     Color color;
-    final modeName = signal.mode.toString().split('.').last;
+    final modeName = widget.signal.mode.toString().split('.').last;
     
     if (modeName == 'priority') color = const Color(0xFF8CFF5A);
     else if (modeName == 'red') color = Colors.redAccent;
     else if (modeName == 'yellow') color = Colors.orangeAccent;
     else color = Colors.greenAccent;
 
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: Colors.black87,
-            shape: BoxShape.circle,
-            border: Border.all(color: color, width: 2),
-            boxShadow: [BoxShadow(color: color.withOpacity(0.5), blurRadius: 8)],
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        double scale = 1.0 + (_pulseController.value * 0.3 * (widget.isEmergency ? 1 : 0));
+        return Transform.scale(
+          scale: scale,
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: color, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.5 + (_pulseController.value * 0.5 * (widget.isEmergency ? 1 : 0))), 
+                      blurRadius: 8 + (_pulseController.value * 8 * (widget.isEmergency ? 1 : 0)),
+                      spreadRadius: widget.isEmergency ? _pulseController.value * 4 : 0,
+                    )
+                  ],
+                ),
+                child: Icon(
+                  modeName == 'priority' ? Icons.star : Icons.traffic, 
+                  size: 14, 
+                  color: color
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                widget.signal.id,
+                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white70),
+              ),
+            ],
           ),
-          child: Icon(
-            modeName == 'priority' ? Icons.star : Icons.traffic, 
-            size: 14, 
-            color: color
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          signal.id,
-          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white70),
-        ),
-      ],
+        );
+      },
     );
   }
 }
