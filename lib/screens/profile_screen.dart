@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/glass_card.dart';
+import 'data_sources_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -42,6 +43,34 @@ class ProfileScreen extends StatelessWidget {
                 title: const Text('Automatic green corridor sync'),
               ),
             ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        const Text(
+          'Integrations',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        GlassCard(
+          padding: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.api, color: Color(0xFF18F2FF)),
+            title: const Text('Data Sources & APIs'),
+            subtitle: const Text('Powered by Wire Protocol'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DataSourcesScreen()),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 32),
+        Center(
+          child: TextButton(
+            onPressed: () {},
+            child: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
           ),
         ),
       ],

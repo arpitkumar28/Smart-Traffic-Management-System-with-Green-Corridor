@@ -4,15 +4,21 @@ class GlassCard extends StatelessWidget {
   const GlassCard({
     required this.child,
     this.padding = const EdgeInsets.all(18),
+    this.height,
+    this.width,
     super.key,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
+  final double? height;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: width,
+      height: height,
       padding: padding,
       decoration: BoxDecoration(
         color: const Color(0xCC0B191F),

@@ -22,6 +22,41 @@ class AnalyticsScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white60, fontSize: 12),
         ),
         const SizedBox(height: 24),
+        
+        // Killer Metrics Row
+        Row(
+          children: [
+            Expanded(
+              child: GlassCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const Text('LIVES SAVED', style: TextStyle(fontSize: 10, color: Colors.white54, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    const Text('127', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF8CFF5A))),
+                    const Text('This Month', style: TextStyle(fontSize: 10, color: Colors.white38)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: GlassCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const Text('RESPONSE IMPROVED', style: TextStyle(fontSize: 10, color: Colors.white54, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    const Text('38%', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF18F2FF))),
+                    const Text('Avg. Reduction', style: TextStyle(fontSize: 10, color: Colors.white38)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: 24),
         _buildSectionHeader('Performance Index'),
         const SizedBox(height: 12),
         GlassCard(
@@ -52,7 +87,7 @@ class AnalyticsScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.auto_awesome, color: Color(0xFF8CFF5A), size: 18),
                   SizedBox(width: 8),
-                  Text('Optimal Signal Timing', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('Optimal Signal Timing', style: TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(height: 12),

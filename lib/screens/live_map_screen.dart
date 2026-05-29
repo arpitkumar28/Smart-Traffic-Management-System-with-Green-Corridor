@@ -4,8 +4,30 @@ import 'package:provider/provider.dart';
 import '../state/traffic_controller.dart';
 import '../widgets/glass_card.dart';
 
-class LiveMapScreen extends StatelessWidget {
+class LiveMapScreen extends StatefulWidget {
   const LiveMapScreen({super.key});
+
+  @override
+  State<LiveMapScreen> createState() => _LiveMapScreenState();
+}
+
+class _LiveMapScreenState extends State<LiveMapScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _ambulanceController;
+
+  @override
+  void initState() {
+    super.initState();
+    _ambulanceController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 15),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ambulanceController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,41 +71,39 @@ class LiveMapScreen extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: CustomPaint(
-                      painter: _MapPainter(
-                        signals: controller.signals,
-                        emergencyActive: controller.emergencyActive,
-                      ),
-                      child: Stack(
-                        children: [
-                          // Pulse effect for emergency
-                          if (controller.emergencyActive)
-                            const _EmergencyPulse(),
-                          
-                          // Moving Ambulance Icon
-                          AnimatedPositioned(
-                            duration: const Duration(seconds: 4),
-                            left: controller.emergencyActive ? 280 : 40,
-                            top: controller.emergencyActive ? 120 : 400,
-                            child: const Icon(
-                              Icons.local_hospital,
-                              color: Color(0xFF8CFF5A),
-                              size: 32,
-                            ),
+                    child: AnimatedBuilder(
+                      animation: _ambulanceController,
+                      builder: (context, child) {
+                        return CustomPaint(
+                          painter: _MapPainter(
+                            signals: controller.signals,
+                            emergencyActive: controller.emergencyActive,
+                            progress: _ambulanceController.value,
                           ),
+                          child: Stack(
+                            children: [
+                              // Pulse effect for emergency
+                              if (controller.emergencyActive)
+                                const _EmergencyPulse(),
+                              
+                              // Moving Ambulance Icon
+                              if (controller.emergencyActive)
+                                _AmbulanceMarker(progress: _ambulanceController.value),
 
-                          // Signal Nodes
-                          ...controller.signals.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final signal = entry.value;
-                            return Positioned(
-                              left: 60.0 + index * 60,
-                              top: 380.0 - index * 70,
-                              child: _SignalNode(signal: signal),
-                            );
-                          }),
-                        ],
-                      ),
+                              // Signal Nodes
+                              ...controller.signals.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final signal = entry.value;
+                                return Positioned(
+                                  left: 60.0 + index * 60,
+                                  top: 380.0 - index * 70,
+                                  child: _SignalNode(signal: signal),
+                                );
+                              }),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -116,6 +136,8 @@ class LiveMapScreen extends StatelessWidget {
                       _LegendItem(color: Colors.red, label: 'Congested'),
                       _LegendItem(color: Colors.orange, label: 'Moderate'),
                       _LegendItem(color: Colors.green, label: 'Smooth'),
+                      if (controller.emergencyActive)
+                        _LegendItem(color: const Color(0xFF8CFF5A), label: 'Green Corridor'),
                     ],
                   ),
                 ),
@@ -129,22 +151,50 @@ class LiveMapScreen extends StatelessWidget {
   }
 }
 
+class _AmbulanceMarker extends StatelessWidget {
+  final double progress;
+  const _AmbulanceMarker({required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    // Basic linear path logic for demo
+    double left = 60 + (300 - 60) * progress;
+    double top = 380 - (380 - 80) * progress;
+
+    return Positioned(
+      left: left - 16,
+      top: top - 16,
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(color: const Color(0xFF8CFF5A).withOpacity(0.8), blurRadius: 12, spreadRadius: 4),
+          ],
+        ),
+        child: const Icon(
+          Icons.local_hospital,
+          color: Colors.red,
+          size: 20,
+        ),
+      ),
+    );
+  }
+}
+
 class _MapPainter extends CustomPainter {
   final List<dynamic> signals;
   final bool emergencyActive;
+  final double progress;
 
-  _MapPainter({required this.signals, required this.emergencyActive});
+  _MapPainter({required this.signals, required this.emergencyActive, required this.progress});
 
   @override
   void paint(Canvas canvas, Size size) {
     final roadPaint = Paint()
       ..color = Colors.white.withOpacity(0.05)
       ..strokeWidth = 24
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final trafficPaint = Paint()
-      ..strokeWidth = 6
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
@@ -156,20 +206,22 @@ class _MapPainter extends CustomPainter {
 
     canvas.drawPath(path, roadPaint);
 
-    // Draw congestion segments
-    for (int i = 0; i < 10; i++) {
-      final color = i % 3 == 0 ? Colors.red : (i % 2 == 0 ? Colors.orange : Colors.green);
-      trafficPaint.color = color.withOpacity(0.6);
-      // Simplified segment drawing
-    }
-
     if (emergencyActive) {
-      final highlightPaint = Paint()
-        ..color = const Color(0xFF8CFF5A).withOpacity(0.3)
-        ..strokeWidth = 30
+      final corridorPaint = Paint()
+        ..color = const Color(0xFF8CFF5A).withOpacity(0.4)
+        ..strokeWidth = 28
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round;
-      canvas.drawPath(path, highlightPaint);
+      canvas.drawPath(path, corridorPaint);
+      
+      final activePathPaint = Paint()
+        ..color = const Color(0xFF8CFF5A)
+        ..strokeWidth = 4
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round;
+        
+      // Extract a portion of the path based on progress? Too complex for CustomPainter demo
+      // Just draw the full path glowing
     }
   }
 
@@ -184,9 +236,12 @@ class _SignalNode extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color color;
-    if (signal.load > 80) color = Colors.red;
-    else if (signal.load > 50) color = Colors.orange;
-    else color = Colors.green;
+    final modeName = signal.mode.toString().split('.').last;
+    
+    if (modeName == 'priority') color = const Color(0xFF8CFF5A);
+    else if (modeName == 'red') color = Colors.redAccent;
+    else if (modeName == 'yellow') color = Colors.orangeAccent;
+    else color = Colors.greenAccent;
 
     return Column(
       children: [
@@ -198,7 +253,11 @@ class _SignalNode extends StatelessWidget {
             border: Border.all(color: color, width: 2),
             boxShadow: [BoxShadow(color: color.withOpacity(0.5), blurRadius: 8)],
           ),
-          child: Icon(Icons.traffic, size: 14, color: color),
+          child: Icon(
+            modeName == 'priority' ? Icons.star : Icons.traffic, 
+            size: 14, 
+            color: color
+          ),
         ),
         const SizedBox(height: 4),
         Text(
@@ -280,7 +339,7 @@ class _EmergencyPulseState extends State<_EmergencyPulse> with SingleTickerProvi
       opacity: _controller.drive(CurveTween(curve: Curves.easeInOut)),
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.red.withOpacity(0.3), width: 4),
+          border: Border.all(color: const Color(0xFF8CFF5A).withOpacity(0.2), width: 8),
         ),
       ),
     );

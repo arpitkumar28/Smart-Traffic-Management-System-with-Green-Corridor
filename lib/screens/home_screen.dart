@@ -149,52 +149,125 @@ class _DashboardView extends StatelessWidget {
   }
 }
 
-class _EmergencyBanner extends StatelessWidget {
+class _EmergencyBanner extends StatefulWidget {
   const _EmergencyBanner({required this.controller});
   final TrafficController controller;
 
   @override
+  State<_EmergencyBanner> createState() => _EmergencyBannerState();
+}
+
+class _EmergencyBannerState extends State<_EmergencyBanner> with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFF3B30), Color(0xFF8E0000)],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.withOpacity(0.4),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.emergency, color: Colors.white, size: 32),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'GREEN CORRIDOR ACTIVE',
-                  style: TextStyle(
-                    fontWeight: FontWeight.black,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                Text(
-                  'Ambulance #${controller.emergency.vehicleId} • ETA: ${controller.emergency.etaSeconds ~/ 60} min',
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-              ],
+    return AnimatedBuilder(
+      animation: _animController,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFF3B30), Color(0xFF8E0000)],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withOpacity(0.4 * _animController.value + 0.2),
+                blurRadius: 12 * _animController.value + 4,
+                spreadRadius: 2 * _animController.value,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3 * _animController.value),
+              width: 1.5,
             ),
           ),
-          const Text(
-            'OPTIMIZED',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.greenAccent),
+          child: child,
+        );
+      },
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.emergency, color: Colors.white, size: 32),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '🚑 GREEN CORRIDOR ACTIVE',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.2,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      'Ambulance #${widget.controller.emergency.vehicleId}',
+                      style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text(
+                    'OPTIMIZED',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF8CFF5A)),
+                  ),
+                  Text(
+                    'ETA: ${widget.controller.emergency.etaSeconds ~/ 60}m ${widget.controller.emergency.etaSeconds % 60}s',
+                    style: const TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const Divider(color: Colors.white24, height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('ROUTE', style: TextStyle(fontSize: 10, color: Colors.white54, fontWeight: FontWeight.bold)),
+                  Text(
+                    widget.controller.emergency.route.join(' → '),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text('ETA SAVED', style: TextStyle(fontSize: 10, color: Colors.white54, fontWeight: FontWeight.bold)),
+                  Text(
+                    '${widget.controller.emergency.timeSavedSeconds ~/ 60} min ${widget.controller.emergency.timeSavedSeconds % 60} sec',
+                    style: const TextStyle(color: Color(0xFF8CFF5A), fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
@@ -321,6 +394,19 @@ class _AIInsightsCard extends StatelessWidget {
             controller.aiPrediction,
             style: const TextStyle(fontSize: 14, color: Colors.white),
           ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Text(
+                'Confidence: ',
+                style: TextStyle(fontSize: 12, color: Colors.white54),
+              ),
+              Text(
+                '${controller.aiConfidence}%',
+                style: const TextStyle(fontSize: 12, color: Color(0xFF18F2FF), fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
           const Text(
             'SUGGESTED ACTION',
@@ -372,7 +458,9 @@ class _SignalItem extends StatelessWidget {
     Color statusColor;
     String signalText;
     
-    switch (signal.mode.name) {
+    final modeName = signal.mode.toString().split('.').last;
+    
+    switch (modeName) {
       case 'priority':
         statusColor = const Color(0xFF8CFF5A);
         signalText = 'Green (Priority)';
@@ -445,7 +533,7 @@ class _LiveEventsFeed extends StatelessWidget {
         GlassCard(
           padding: const EdgeInsets.all(0),
           child: Column(
-            children: controller.alerts.take(3).map((alert) {
+            children: controller.alerts.take(4).map((alert) {
               return ListTile(
                 dense: true,
                 leading: _getIconForAlert(alert.title),
@@ -461,11 +549,17 @@ class _LiveEventsFeed extends StatelessWidget {
   }
 
   Widget _getIconForAlert(String title) {
-    if (title.contains('Emergency') || title.contains('Corridor')) {
+    if (title.contains('Ambulance') || title.contains('Emergency') || title.contains('Corridor')) {
       return const Icon(Icons.emergency_outlined, color: Colors.redAccent, size: 20);
     }
     if (title.contains('AI') || title.contains('Congestion')) {
       return const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 20);
+    }
+    if (title.contains('Signal') || title.contains('optimized')) {
+      return const Icon(Icons.traffic_outlined, color: Color(0xFF8CFF5A), size: 20);
+    }
+    if (title.contains('CO2') || title.contains('reduced')) {
+      return const Icon(Icons.eco_outlined, color: Colors.green, size: 20);
     }
     return const Icon(Icons.info_outline, color: Color(0xFF18F2FF), size: 20);
   }

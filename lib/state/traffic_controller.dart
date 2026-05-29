@@ -15,6 +15,7 @@ class TrafficController extends ChangeNotifier {
   int vehiclesPerMinute = 1284;
   int avgWaitSeconds = 42;
   bool emergencyActive = false;
+  int aiConfidence = 92;
 
   String get networkFlowTrend => '+12%';
   String get vpmTrend => '↑ 5%';
@@ -23,7 +24,7 @@ class TrafficController extends ChangeNotifier {
   EmergencyEvent emergency = const EmergencyEvent(
     vehicleId: 'A-204',
     route: ['SIG-04', 'SIG-01', 'SIG-02', 'SIG-05'],
-    etaSeconds: 240,
+    etaSeconds: 204,
     timeSavedSeconds: 210,
     active: true,
   );
@@ -57,14 +58,26 @@ class TrafficController extends ChangeNotifier {
 
   List<TrafficAlert> alerts = [
     TrafficAlert(
+      title: 'Ambulance detected',
+      message: 'Emergency vehicle A-204 approaching SIG-04',
+      priority: 3,
+      timestamp: DateTime.now(),
+    ),
+    TrafficAlert(
       title: 'AI Alert',
       message: 'Congestion rising near Tech Park',
       priority: 2,
       timestamp: DateTime.now(),
     ),
     TrafficAlert(
-      title: 'Eco Mode',
-      message: 'Signal timing reduced idle emissions',
+      title: 'Signal optimized',
+      message: 'SIG-02 timing adjusted for flow',
+      priority: 1,
+      timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
+    ),
+    TrafficAlert(
+      title: 'CO2 reduced',
+      message: 'Emissions dropped by 8% this hour',
       priority: 1,
       timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
     ),
@@ -79,7 +92,22 @@ class TrafficController extends ChangeNotifier {
       networkFlow = 74 + _random.nextInt(20);
       vehiclesPerMinute = 980 + _random.nextInt(520);
       avgWaitSeconds = 32 + _random.nextInt(28);
+      aiConfidence = 85 + _random.nextInt(10);
       
+      if (emergencyActive) {
+        if (emergency.etaSeconds > 5) {
+          emergency = EmergencyEvent(
+            vehicleId: emergency.vehicleId,
+            route: emergency.route,
+            etaSeconds: emergency.etaSeconds - 3,
+            timeSavedSeconds: emergency.timeSavedSeconds + 1,
+            active: true,
+          );
+        } else {
+          deactivateEmergencyMode();
+        }
+      }
+
       signals = signals.map((signal) {
         final nextLoad = (signal.load + _random.nextInt(17) - 8).clamp(12, 98);
         var mode = signal.mode;
@@ -105,6 +133,13 @@ class TrafficController extends ChangeNotifier {
 
   Future<void> activateEmergencyMode() async {
     emergencyActive = true;
+    emergency = const EmergencyEvent(
+      vehicleId: 'A-204',
+      route: ['SIG-04', 'SIG-01', 'SIG-02', 'SIG-05'],
+      etaSeconds: 204,
+      timeSavedSeconds: 180,
+      active: true,
+    );
     alerts = [
       TrafficAlert(
         title: 'Green Corridor Active',
