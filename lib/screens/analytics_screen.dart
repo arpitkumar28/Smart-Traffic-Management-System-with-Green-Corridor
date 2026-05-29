@@ -14,36 +14,83 @@ class AnalyticsScreen extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       children: [
         const Text(
-          'Analytics',
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
+          'Intelligence Analytics',
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
         ),
-        const SizedBox(height: 18),
+        const Text(
+          'AI-driven traffic optimization metrics',
+          style: TextStyle(color: Colors.white60, fontSize: 12),
+        ),
+        const SizedBox(height: 24),
+        _buildSectionHeader('Performance Index'),
+        const SizedBox(height: 12),
+        GlassCard(
+          child: Column(
+            children: [
+              _Bar(label: 'Network Efficiency', value: controller.networkFlow, color: const Color(0xFF18F2FF)),
+              _Bar(label: 'Emergency Response', value: 92, color: const Color(0xFF8CFF5A)),
+              _Bar(label: 'CO2 Emission Reduction', value: 64, color: Colors.greenAccent),
+              _Bar(label: 'Congestion Mitigation', value: 72, color: Colors.orangeAccent),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        _buildSectionHeader('Traffic Volume (24h)'),
+        const SizedBox(height: 12),
+        const GlassCard(
+          height: 180,
+          child: _MiniLineChart(),
+        ),
+        const SizedBox(height: 24),
+        _buildSectionHeader('AI Optimization Prediction'),
+        const SizedBox(height: 12),
         GlassCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'AI Insights',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              const Row(
+                children: [
+                  Icon(Icons.auto_awesome, color: Color(0xFF8CFF5A), size: 18),
+                  SizedBox(width: 8),
+                  Text('Optimal Signal Timing', style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
               ),
-              const SizedBox(height: 18),
-              _Bar(label: 'Network flow', value: controller.networkFlow),
-              _Bar(label: 'Response improvement', value: 38),
-              _Bar(label: 'Eco savings', value: 64),
-              _Bar(label: 'Congestion risk', value: 72),
+              const SizedBox(height: 12),
+              const Text(
+                'Based on current flow, shifting Signal SIG-03 to a 45s cycle will reduce buildup by 14% in the next 10 minutes.',
+                style: TextStyle(fontSize: 13, color: Colors.white70),
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton(
+                onPressed: () {},
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF18F2FF)),
+                  foregroundColor: const Color(0xFF18F2FF),
+                ),
+                child: const Text('Apply AI Recommendation'),
+              ),
             ],
           ),
         ),
+        const SizedBox(height: 32),
       ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.1),
     );
   }
 }
 
 class _Bar extends StatelessWidget {
-  const _Bar({required this.label, required this.value});
+  const _Bar({required this.label, required this.value, required this.color});
 
   final String label;
   final int value;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -54,20 +101,91 @@ class _Bar extends StatelessWidget {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [Text(label), Text('$value%')],
+            children: [
+              Text(label, style: const TextStyle(fontSize: 13, color: Colors.white70)),
+              Text('$value%', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color)),
+            ],
           ),
           const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              minHeight: 10,
-              value: value / 100,
-              color: const Color(0xFF8CFF5A),
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-            ),
+          Stack(
+            children: [
+              Container(
+                height: 6,
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              FractionallySizedBox(
+                widthFactor: value / 100,
+                child: Container(
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(3),
+                    boxShadow: [
+                      BoxShadow(color: color.withOpacity(0.3), blurRadius: 4),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+}
+
+class _MiniLineChart extends StatelessWidget {
+  const _MiniLineChart();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size.infinite,
+      painter: _ChartPainter(),
+    );
+  }
+}
+
+class _ChartPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF18F2FF)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [const Color(0xFF18F2FF).withOpacity(0.3), Colors.transparent],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    final path = Path()
+      ..moveTo(0, size.height * 0.7)
+      ..lineTo(size.width * 0.2, size.height * 0.5)
+      ..lineTo(size.width * 0.4, size.height * 0.8)
+      ..lineTo(size.width * 0.6, size.height * 0.3)
+      ..lineTo(size.width * 0.8, size.height * 0.4)
+      ..lineTo(size.width, size.height * 0.1);
+
+    final fillPath = Path.from(path)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    canvas.drawPath(fillPath, fillPaint);
+    canvas.drawPath(path, paint);
+
+    // Draw data points
+    final pointPaint = Paint()..color = Colors.white;
+    canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.3), 4, pointPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

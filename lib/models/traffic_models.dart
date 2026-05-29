@@ -35,9 +35,25 @@ class TrafficAlert {
     required this.title,
     required this.message,
     required this.priority,
+    this.timestamp,
   });
 
   final String title;
   final String message;
   final int priority;
+  final DateTime? timestamp;
+}
+
+class TrafficMetric {
+  const TrafficMetric({
+    required this.label,
+    required this.value,
+    required this.trend,
+    required this.isPositive,
+  });
+
+  final String label;
+  final String value;
+  final String trend;
+  final bool isPositive;
 }

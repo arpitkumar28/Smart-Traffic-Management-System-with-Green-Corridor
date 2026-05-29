@@ -16,10 +16,14 @@ class TrafficController extends ChangeNotifier {
   int avgWaitSeconds = 42;
   bool emergencyActive = false;
 
+  String get networkFlowTrend => '+12%';
+  String get vpmTrend => '↑ 5%';
+  String get waitTrend => '↓ 8%';
+
   EmergencyEvent emergency = const EmergencyEvent(
-    vehicleId: 'EV-204',
+    vehicleId: 'A-204',
     route: ['SIG-04', 'SIG-01', 'SIG-02', 'SIG-05'],
-    etaSeconds: 420,
+    etaSeconds: 240,
     timeSavedSeconds: 210,
     active: true,
   );
@@ -28,14 +32,14 @@ class TrafficController extends ChangeNotifier {
     TrafficSignal(
       id: 'SIG-04',
       name: 'Hospital Link',
-      load: 26,
+      load: 95,
       mode: SignalMode.priority,
     ),
     TrafficSignal(
       id: 'SIG-01',
       name: 'Civic Center',
-      load: 38,
-      mode: SignalMode.priority,
+      load: 56,
+      mode: SignalMode.yellow,
     ),
     TrafficSignal(
       id: 'SIG-02',
@@ -51,23 +55,23 @@ class TrafficController extends ChangeNotifier {
     ),
   ];
 
-  List<TrafficAlert> alerts = const [
+  List<TrafficAlert> alerts = [
     TrafficAlert(
       title: 'AI Alert',
       message: 'Congestion rising near Tech Park',
       priority: 2,
+      timestamp: DateTime.now(),
     ),
     TrafficAlert(
       title: 'Eco Mode',
       message: 'Signal timing reduced idle emissions',
       priority: 1,
-    ),
-    TrafficAlert(
-      title: 'Emergency Ready',
-      message: 'Ambulance route precomputed',
-      priority: 3,
+      timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
     ),
   ];
+
+  String aiPrediction = 'Heavy congestion expected near Civic Center within 18 minutes.';
+  String aiAction = 'Extend green time by 12s.';
 
   void startDemo() {
     _timer?.cancel();
@@ -75,11 +79,19 @@ class TrafficController extends ChangeNotifier {
       networkFlow = 74 + _random.nextInt(20);
       vehiclesPerMinute = 980 + _random.nextInt(520);
       avgWaitSeconds = 32 + _random.nextInt(28);
+      
       signals = signals.map((signal) {
-        final nextLoad = (signal.load + _random.nextInt(17) - 8).clamp(12, 96);
-        final mode = emergencyActive && emergency.route.contains(signal.id)
-            ? SignalMode.priority
-            : signal.mode;
+        final nextLoad = (signal.load + _random.nextInt(17) - 8).clamp(12, 98);
+        var mode = signal.mode;
+        
+        if (emergencyActive && emergency.route.contains(signal.id)) {
+          mode = SignalMode.priority;
+        } else {
+          if (nextLoad > 80) mode = SignalMode.red;
+          else if (nextLoad > 50) mode = SignalMode.yellow;
+          else mode = SignalMode.green;
+        }
+
         return TrafficSignal(
           id: signal.id,
           name: signal.name,
@@ -94,15 +106,21 @@ class TrafficController extends ChangeNotifier {
   Future<void> activateEmergencyMode() async {
     emergencyActive = true;
     alerts = [
-      const TrafficAlert(
+      TrafficAlert(
         title: 'Green Corridor Active',
-        message: 'Upcoming signals are switching to priority green',
+        message: 'Ambulance detected. Signals switching to priority.',
         priority: 3,
+        timestamp: DateTime.now(),
       ),
       ...alerts,
     ];
     notifyListeners();
     await firebaseService.activateEmergency(emergency);
+  }
+
+  void deactivateEmergencyMode() {
+    emergencyActive = false;
+    notifyListeners();
   }
 
   @override
