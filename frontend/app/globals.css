@@ -1,4 +1,5 @@
 @import "leaflet/dist/leaflet.css";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -15,19 +16,67 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 18% 16%, rgba(24, 242, 255, 0.18), transparent 28%),
-    radial-gradient(circle at 83% 10%, rgba(140, 255, 90, 0.16), transparent 24%),
-    linear-gradient(135deg, #061014 0%, #081a20 48%, #10151d 100%);
-  color: #eefbff;
+  background-color: #050B12;
+  color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
 }
 
-.glass {
-  border: 1px solid rgba(190, 255, 244, 0.14);
-  background: rgba(9, 22, 28, 0.72);
-  backdrop-filter: blur(18px);
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(0, 229, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
-.map-grid {
-  background-size: 56px 56px;
+.glow-card {
+  background: #0D1B24;
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  transition: all 0.3s ease;
+}
+
+.glow-card:hover {
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+}
+
+.emergency-mode-active {
+  border: 2px solid #FF5252 !important;
+  box-shadow: inset 0 0 50px rgba(255, 82, 82, 0.2), 0 0 30px rgba(255, 82, 82, 0.3) !important;
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(0.95); opacity: 0.5; }
+  50% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.5; }
+}
+
+.emergency-pulse {
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes warning-strip {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+
+.warning-bar {
+  background: repeating-linear-gradient(
+    45deg,
+    #FF5252,
+    #FF5252 10px,
+    #050B12 10px,
+    #050B12 20px
+  );
+  background-size: 40px 40px;
+  animation: warning-strip 1s linear infinite;
+}
+
+/* Custom Leaflet overrides for dark mode theme */
+.leaflet-container {
+  background: #050B12 !important;
+}
+
+.leaflet-tile-pane {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(180deg) saturate(0.3);
 }

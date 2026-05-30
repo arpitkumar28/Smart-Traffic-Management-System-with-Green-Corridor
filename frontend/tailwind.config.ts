@@ -5,19 +5,27 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#061014",
-        panel: "rgba(11, 25, 31, 0.76)",
-        cyan: "#18f2ff",
-        lime: "#8cff5a",
-        ember: "#ff7a45",
+        background: "#050B12",
+        "secondary-background": "#07171B",
+        card: "#0D1B24",
+        border: "rgba(0,229,255,0.15)",
+        primary: "#00E5FF",
+        success: "#00FF88",
+        warning: "#FFC857",
+        danger: "#FF5252",
+        "text-primary": "#FFFFFF",
+        "text-secondary": "rgba(255,255,255,0.65)",
+      },
+      fontFamily: {
+        inter: ["Inter", "sans-serif"],
       },
       boxShadow: {
-        neon: "0 0 24px rgba(24, 242, 255, 0.28)",
-        green: "0 0 28px rgba(140, 255, 90, 0.24)",
+        neon: "0 0 20px rgba(0, 229, 255, 0.3)",
+        "neon-success": "0 0 20px rgba(0, 255, 136, 0.3)",
+        "neon-danger": "0 0 20px rgba(255, 82, 82, 0.3)",
       },
       backgroundImage: {
-        citygrid:
-          "linear-gradient(rgba(24,242,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(140,255,90,.07) 1px, transparent 1px)",
+        "grid-pattern": "linear-gradient(to right, rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 229, 255, 0.05) 1px, transparent 1px)",
       },
     },
   },

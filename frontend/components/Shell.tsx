@@ -3,56 +3,107 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Activity, Ambulance, BarChart3, Bot, Gauge, Home, Map, RadioTower, Settings, ShieldCheck } from "lucide-react";
-import { cn } from "@/components/ui";
+import { Activity, Ambulance, BarChart3, Bot, Gauge, Home, Map, RadioTower, Settings, ShieldCheck, Cpu, Wifi, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 const nav = [
-  { href: "/", label: "Landing", icon: Home },
-  { href: "/dashboard", label: "Dashboard", icon: Gauge },
-  { href: "/map", label: "Live Map", icon: Map },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/emergency", label: "Emergency", icon: Ambulance },
-  { href: "/signals", label: "Signals", icon: Activity },
-  { href: "/ai-monitoring", label: "AI Monitor", icon: Bot },
-  { href: "/wire", label: "Wire Intel", icon: RadioTower },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/command-center", label: "COMMAND CENTER", icon: Gauge },
+  { href: "/map", label: "LIVE OPERATIONS", icon: Map },
+  { href: "/analytics", label: "AI INTELLIGENCE", icon: BarChart3 },
+  { href: "/wire", label: "WIRE FEED", icon: RadioTower },
+  { href: "/emergency", label: "EMERGENCY CONTROL", icon: Ambulance },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const isLanding = pathname === "/";
+
   return (
-    <div className="min-h-screen bg-citygrid map-grid">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 border-r border-white/10 bg-ink/80 p-5 backdrop-blur-xl lg:block">
-        <div className="mb-8 flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-lg border border-lime/30 bg-lime/10 text-lime shadow-green">
-            <ShieldCheck size={22} />
+    <div className="min-h-screen bg-background text-text-primary font-inter flex flex-col">
+      {/* TOP STATUS BAR */}
+      {!isLanding && (
+        <header className="h-14 border-b border-border bg-secondary-background/80 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-50">
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-2 mr-4">
+              <ShieldCheck className="text-primary" size={24} />
+              <span className="font-black tracking-tighter text-xl">GREENFLOW AI</span>
+            </Link>
+            
+            <div className="hidden md:flex items-center gap-6 text-[10px] font-bold tracking-widest text-success">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                SYSTEM ONLINE
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-success" />
+                AI ENGINE ACTIVE
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-success" />
+                SIGNAL NETWORK CONNECTED
+              </div>
+            </div>
           </div>
-          <div>
-            <div className="text-lg font-black">GreenFlow AI</div>
-            <div className="text-xs text-cyan/70">Smart corridor command</div>
+
+          <div className="flex items-center gap-4">
+             <div className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-primary">
+                <Cpu size={14} />
+                WIRE INTELLIGENCE ACTIVE
+             </div>
+             <div className="h-4 w-[1px] bg-border mx-2" />
+             <div className="text-[10px] font-bold tracking-widest text-text-secondary">
+               12:44:02 UTC
+             </div>
           </div>
-        </div>
-        <nav className="space-y-2">
-          {nav.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-white/70 transition hover:bg-white/10 hover:text-white",
-                  active && "bg-cyan/10 text-cyan shadow-neon",
-                )}
+        </header>
+      )}
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* SIDEBAR - Only show on dashboard pages */}
+        {!isLanding && (
+          <aside className="w-20 lg:w-64 border-r border-border bg-secondary-background flex flex-col transition-all duration-300">
+            <nav className="flex-1 p-4 space-y-2">
+              {nav.map((item) => {
+                const Icon = item.icon;
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-4 py-3 text-xs font-bold tracking-wider transition-all duration-200",
+                      active 
+                        ? "bg-primary/10 text-primary border border-primary/20 shadow-neon" 
+                        : "text-text-secondary hover:bg-white/5 hover:text-text-primary"
+                    )}
+                  >
+                    <Icon size={18} className={cn(active ? "text-primary" : "text-text-secondary")} />
+                    <span className="hidden lg:block">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+            
+            <div className="p-4 border-t border-border">
+               <Link
+                href="/settings"
+                className="flex items-center gap-3 rounded-lg px-4 py-3 text-xs font-bold tracking-wider text-text-secondary hover:bg-white/5 hover:text-text-primary transition-all"
               >
-                <Icon size={18} />
-                {item.label}
+                <Settings size={18} />
+                <span className="hidden lg:block">SETTINGS</span>
               </Link>
-            );
-          })}
-        </nav>
-      </aside>
-      <main className="px-4 py-4 lg:ml-72 lg:px-8">{children}</main>
+            </div>
+          </aside>
+        )}
+
+        <main className={cn(
+          "flex-1 overflow-auto bg-grid-pattern",
+          isLanding ? "" : "p-6"
+        )}>
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
