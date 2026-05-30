@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios";
 
-export const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
-export const wsUrl = process.env.NEXT_PUBLIC_WS_URL ?? "ws://127.0.0.1:8000/ws";
+export const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://smart-traffic-management-system-with.onrender.com";
+export const wsUrl = process.env.NEXT_PUBLIC_WS_URL ?? "wss://smart-traffic-management-system-with.onrender.com/ws";
 
 export const api = axios.create({ baseURL: apiUrl, timeout: 10000 });
 
@@ -25,6 +25,14 @@ export interface Signal {
   traffic_load: number;
   lat: number;
   lng: number;
+}
+
+export interface EmergencyVehicle {
+  id: string;
+  type: "ambulance" | "fire_brigade";
+  lat: number;
+  lng: number;
+  destination?: string;
 }
 
 export interface Alert {
@@ -222,7 +230,7 @@ export async function triggerEmergencyCorridor(
 
 export interface WebSocketMessage {
   type: string;
-  payload: unknown;
+  payload: any;
 }
 
 export function openGreenFlowSocket(
