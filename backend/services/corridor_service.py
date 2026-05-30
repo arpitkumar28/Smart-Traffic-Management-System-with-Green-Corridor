@@ -8,47 +8,45 @@ from services.websocket_service import manager
 
 async def activate_green_corridor(ambulance_id: str, destination: str) -> dict[str, Any]:
     eta_before = 8
-    eta_after = 4
-    route_signal_ids = {"SIG-01", "SIG-02", "SIG-04"} # Civic Center, Metro Spine, Hospital Link
+    eta_after = 3
+    # Route: Metro Junction -> Hospital Road
+    route_signal_ids = {"SIG-01", "SIG-02"}
 
-    # Map signal IDs to coordinates for the polyline
-    signal_coords = {s["id"]: (s["lat"], s["lng"]) for s in demo_store.signals}
-    
-    # Simple route: Start at ambulance (28.6200, 77.2000) -> SIG-02 -> SIG-01 -> SIG-04
+    # Signal coords for the route
     route_coords = [
-        [28.6200, 77.2000],
-        [28.6139, 77.209],  # SIG-02
-        [28.6328, 77.2195], # SIG-01
-        [28.6159, 77.215],  # SIG-04
+        [28.6100, 77.2000],  # Start
+        [28.6139, 77.2090],  # Metro Junction (SIG-01)
+        [28.6155, 77.2150],  # Hospital Road (SIG-02)
     ]
 
     for signal in demo_store.signals:
         if signal["id"] in route_signal_ids:
             signal["status"] = "priority"
-            signal["traffic_load"] = max(10, int(signal["traffic_load"]) - 25)
+            signal["traffic_load"] = max(5, int(signal["traffic_load"]) - 40)
 
     for ambulance in demo_store.ambulances:
         if ambulance["id"] == ambulance_id:
             ambulance["destination"] = destination
             ambulance["eta"] = eta_after
             ambulance["status"] = "Green Corridor Active"
-            # Move ambulance closer to destination for demo
-            ambulance["lat"] = 28.6180
-            ambulance["lng"] = 77.2100
+            # Move ambulance to the middle of the route for demo effect
+            ambulance["lat"] = 28.6139
+            ambulance["lng"] = 77.2090
 
-    demo_store.analytics["response_time"] = 32
-    demo_store.analytics["efficiency"] = 94
+    demo_store.analytics["response_time"] = 28
+    demo_store.analytics["efficiency"] = 96
     demo_store.analytics["emergencyVehiclesAssisted"] += 1
-    demo_store.analytics["hoursSaved"] += 0.5
+    demo_store.analytics["hoursSaved"] += 0.8
+    demo_store.analytics["co2_reduction"] += 5
 
-    event = demo_store.event(f"Green Corridor activated for {ambulance_id}", "green_corridor")
+    event = demo_store.event(f"EMERGENCY: Green Corridor activated for {ambulance_id} to {destination}", "green_corridor")
     
     demo_store.alerts.insert(
         0,
         {
             "id": len(demo_store.alerts) + 1,
-            "title": "EMERGENCY PRIORITY",
-            "description": f"Green Corridor established for {ambulance_id} to {destination}",
+            "title": "🚑 EMERGENCY PRIORITY",
+            "description": f"Green Corridor established to {destination}. Signals synchronized.",
             "created_at": "live",
         },
     )

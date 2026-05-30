@@ -199,6 +199,8 @@ export interface AIRecommendation {
   zone: string;
   risk: string;
   confidence: number;
+  currentTraffic?: string;
+  predictedTraffic?: string;
   recommendedAction: string;
 }
 
@@ -226,7 +228,7 @@ export async function fetchEmergencyVehicles(): Promise<EmergencyVehicle[]> {
 
 export async function triggerEmergencyCorridor(
   ambulanceId: string = "AMB-102",
-  destination: string = "City Hospital"
+  destination: string = "Hospital Road"
 ): Promise<GreenCorridorResponse> {
   try {
     const { data } = await api.post<GreenCorridorResponse>(

@@ -59,7 +59,7 @@ export default function MapPage() {
   const handleTrigger = async () => {
     setIsTriggering(true);
     try {
-        await triggerEmergencyCorridor("AMB-102", "City Hospital");
+        await triggerEmergencyCorridor("AMB-102", "Hospital Road");
     } catch (e) {
         console.error("Manual trigger failed");
     } finally {
@@ -85,11 +85,11 @@ export default function MapPage() {
             className={`h-12 px-6 font-bold transition-all border-2 ${
                 isTriggering 
                 ? "bg-red-500/20 border-red-500 text-red-500" 
-                : "bg-lime/10 border-lime/40 text-lime hover:bg-lime/20"
+                : "bg-red-500/10 border-red-500/40 text-red-500 hover:bg-red-500/20"
             }`}
           >
             <Ambulance size={18} className="mr-2" />
-            {isTriggering ? "Clearing Route..." : "Trigger Green Corridor"}
+            {isTriggering ? "Clearing Route..." : "🚑 Simulate Ambulance"}
           </Button>
         </div>
 
@@ -105,7 +105,7 @@ export default function MapPage() {
                         <div className="p-1.5 bg-cyan/20 rounded">
                             <Cpu className="text-cyan" size={16} />
                         </div>
-                        <h2 className="font-bold text-sm uppercase tracking-wider">AI Prediction Engine</h2>
+                        <h2 className="font-bold text-sm uppercase tracking-wider">AI Traffic Prediction</h2>
                     </div>
                     {prediction && (
                         <span className="text-[10px] font-black px-2 py-0.5 rounded bg-lime/20 text-lime border border-lime/30">
@@ -116,25 +116,28 @@ export default function MapPage() {
                 
                 {prediction ? (
                     <div className="space-y-4">
-                        <div className={`p-3 rounded-lg border ${
-                            prediction.risk === 'High' ? 'bg-red-500/10 border-red-500/20' : 'bg-ember/10 border-ember/20'
-                        }`}>
-                            <div className="flex items-center gap-2 mb-1">
-                                <AlertTriangle size={12} className={prediction.risk === 'High' ? 'text-red-500' : 'text-ember'} />
-                                <p className={`text-[10px] font-black uppercase ${
-                                    prediction.risk === 'High' ? 'text-red-500' : 'text-ember'
-                                }`}>{prediction.risk} Risk Congestion</p>
+                        <div className="space-y-3">
+                            <div>
+                                <p className="text-[10px] text-white/40 uppercase font-bold">Location</p>
+                                <p className="text-sm font-bold text-white">{prediction.zone}</p>
                             </div>
-                            <p className="text-sm font-bold">{prediction.zone}</p>
-                            <p className="text-[10px] text-white/60 mt-1 flex items-center gap-1">
-                                <TrendingUp size={10} />
-                                Predicted Traffic (15 min): Heavy
-                            </p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <p className="text-[10px] text-white/40 uppercase font-bold">Current</p>
+                                    <p className="text-xs font-bold text-amber">{prediction.currentTraffic || 'Moderate'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] text-white/40 uppercase font-bold">Predicted (15m)</p>
+                                    <p className="text-xs font-bold text-red-500">{prediction.predictedTraffic || 'Heavy'}</p>
+                                </div>
+                            </div>
                         </div>
+
                         <div className="p-3 rounded-lg bg-white/5 border border-white/10">
                             <p className="text-[10px] font-black text-cyan uppercase mb-1">Recommendation</p>
                             <p className="text-xs leading-relaxed text-white/80">{prediction.recommendedAction}</p>
                         </div>
+                        
                         <Button className="w-full text-[10px] h-8 bg-cyan/20 border-cyan/40 text-cyan hover:bg-cyan/30 uppercase font-black">
                             <CheckCircle2 size={12} className="mr-2" />
                             Apply Adaptive Tuning
@@ -154,7 +157,7 @@ export default function MapPage() {
                 </div>
                 <div className="space-y-4">
                     {signals.length > 0 ? (
-                        signals.slice(0, 4).map(signal => (
+                        signals.map(signal => (
                             <SignalStatus 
                                 key={signal.id}
                                 name={signal.name} 
