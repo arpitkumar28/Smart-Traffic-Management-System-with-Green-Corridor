@@ -1,26 +1,13 @@
 "use client";
 
-import { signInWithEmailAndPassword } from "firebase/auth";
 import { ShieldCheck } from "lucide-react";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button, Card } from "@/components/ui";
-import { auth } from "@/lib/firebase";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@greenflow.ai");
-  const [password, setPassword] = useState("demo1234");
-  const [error, setError] = useState("");
-
-  async function login() {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push("/dashboard");
-    } catch {
-      setError("Firebase login failed. Check credentials or use demo mode after setup.");
-    }
-  }
+  const [role, setRole] = useState("Traffic Operator");
 
   return (
     <main className="grid min-h-screen place-items-center bg-citygrid map-grid px-4">
@@ -30,17 +17,18 @@ export default function LoginPage() {
             <ShieldCheck />
           </div>
           <div>
-            <h1 className="text-2xl font-black">Admin Login</h1>
-            <p className="text-sm text-white/55">Secure Firebase command access</p>
+            <h1 className="text-2xl font-black">Secure Admin Access</h1>
+            <p className="text-sm text-white/55">Demo login with role-based command access</p>
           </div>
         </div>
-        <label className="text-sm text-white/62">Email</label>
-        <input className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 outline-none focus:border-cyan/60" value={email} onChange={(event) => setEmail(event.target.value)} />
-        <label className="mt-4 block text-sm text-white/62">Password</label>
-        <input className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 outline-none focus:border-cyan/60" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
-        {error ? <p className="mt-4 text-sm text-ember">{error}</p> : null}
-        <Button className="mt-6 w-full" onClick={() => void login()}>
-          Enter Dashboard
+        <label className="text-sm text-white/62">Role</label>
+        <select className="mt-2 w-full rounded-lg border border-white/10 bg-[#081a20] px-4 py-3 outline-none focus:border-cyan/60" value={role} onChange={(event) => setRole(event.target.value)}>
+          <option>Traffic Operator</option>
+          <option>Emergency Operator</option>
+          <option>City Administrator</option>
+        </select>
+        <Button className="mt-6 w-full" onClick={() => router.push("/dashboard")}>
+          Continue as {role}
         </Button>
       </Card>
     </main>

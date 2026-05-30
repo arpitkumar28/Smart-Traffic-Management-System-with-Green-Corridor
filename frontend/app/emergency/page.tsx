@@ -4,7 +4,7 @@ import { Ambulance, Siren, TimerReset } from "lucide-react";
 import type { ReactNode } from "react";
 import { Shell } from "@/components/Shell";
 import { Button, Card } from "@/components/ui";
-import { triggerEmergencyCorridor } from "@/lib/firebase";
+import { triggerEmergencyCorridor } from "@/lib/api";
 
 export default function EmergencyPage() {
   return (

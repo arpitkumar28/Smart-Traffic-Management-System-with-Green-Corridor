@@ -1,21 +1,66 @@
 # GreenFlow AI
 
-GreenFlow AI is a full-stack smart traffic management demo for hackathons and smart-city pilots. It includes a futuristic web command dashboard, Flutter mobile app, Firebase realtime backend, Cloud Functions, and a Python AI engine scaffold for traffic density, emergency detection, and adaptive signal timing.
+GreenFlow AI is a production-style hackathon MVP for AI-powered smart traffic management and emergency response. It uses a Flutter mobile app, Next.js command center, FastAPI backend, Supabase PostgreSQL, WebSockets, OpenStreetMap, and a rule-based AI decision engine to create Green Corridors for ambulances.
 
-## Project Structure
+## Problem
+
+Ambulances lose critical minutes at congested intersections. Static traffic signals cannot react fast enough to emergency vehicles, road conditions, or sudden congestion.
+
+## Solution
+
+GreenFlow AI detects congestion, predicts risk, synchronizes traffic signals, and activates green corridors that cut ambulance ETA from 8 minutes to 4 minutes in demo mode.
+
+## Features
+
+- Green Corridor activation through Flutter and web dashboard
+- FastAPI REST endpoints for dashboard, signals, alerts, events, analytics, and AI prediction
+- WebSocket `/ws` broadcasts for realtime signal, ambulance, alert, event, and analytics updates
+- Supabase-ready database layer with demo fallback data
+- OpenStreetMap maps in Flutter and Next.js
+- Wire intelligence card with traffic, emergency, weather, road, and public alert sources
+- Demo mode with realistic traffic, congestion, alerts, and ambulance movement
+
+## Architecture
 
 ```text
-.
-├── frontend/              # Next.js 15 dashboard
-├── backend/functions/     # Firebase Cloud Functions
-├── firebase/              # Firebase rules and config
-├── ai-engine/             # Python OpenCV/YOLO-ready AI simulator
-├── lib/                   # Flutter mobile app source
-├── android/ ios/ web/     # Flutter platform targets
-└── docs/                  # API and setup notes
+Flutter App / Next.js Dashboard
+        ↓
+FastAPI Backend + WebSocket
+        ↓
+Supabase PostgreSQL
+        ↓
+AI Decision Engine
+        ↓
+Green Corridor Controller
 ```
 
-## Web Dashboard
+See `docs/ARCHITECTURE.md` for the Mermaid diagram.
+
+## Tech Stack
+
+- Mobile: Flutter, Material 3, Provider, fl_chart, flutter_map, http, web_socket_channel
+- Web: Next.js 15, TypeScript, TailwindCSS, Recharts, Leaflet/OpenStreetMap, Axios
+- Backend: FastAPI, Pydantic, Supabase Python client, WebSockets
+- Hosting: Render for backend, Vercel for web, Supabase for database
+
+## Run Backend
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+## Run Flutter
+
+```bash
+flutter pub get
+flutter run
+```
+
+## Run Web Dashboard
 
 ```bash
 cd frontend
@@ -24,61 +69,35 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open `http://localhost:3000`. Configure Firebase and Google Maps keys in `frontend/.env.local`.
+## Supabase Setup
 
-## Flutter Mobile App
-
-```bash
-flutter pub get
-flutter run
-```
-
-Build an Android APK:
+Create the tables in `docs/API.md`, then set:
 
 ```bash
-flutter build apk --release
+SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
-For Firebase, run `flutterfire configure` and add your generated platform config files. Use the same Firebase project as the web dashboard so realtime traffic, signal, and emergency data stays synchronized.
+Without credentials, the backend runs with seeded demo data.
 
-## Firebase Backend
+## Green Corridor AI
 
-```bash
-cd backend/functions
-npm install
-npm run build
-cd ../../firebase
-firebase deploy
-```
-
-Deploy from the `firebase/` directory so rules, indexes, database rules, and functions source resolve together.
-
-## AI Engine
-
-```bash
-cd ai-engine
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python greenflow_ai.py --watch
-```
-
-The simulator emits vehicle counts, density predictions, signal plans, and emergency corridor events. Replace the simulated detector with `ultralytics.YOLO` in `ai-engine/greenflow_ai.py` when camera feeds are available.
+`POST /ambulance/activate` updates ambulance status, turns route signals green, creates event logs, updates analytics, reduces ETA, and broadcasts realtime updates through `/ws`.
 
 ## Demo Flow
 
-1. Launch the web dashboard and Flutter app.
-2. Sign in or continue in demo mode on mobile.
-3. Tap `Activate Ambulance Mode` in the mobile app or `Trigger Green Corridor` on the web dashboard.
-4. Watch the route, alerts, signal status, ETA, and time-saved metrics update through the shared Firebase Realtime Database paths.
+Login, view dashboard metrics, inspect AI prediction, open map visualization, activate ambulance mode, watch Green Corridor activation, verify signal synchronization, then show analytics improvements.
 
 ## Deployment
 
-Vercel:
+- Backend: deploy `backend/` to Render with `uvicorn main:app --host 0.0.0.0 --port $PORT`
+- Web: deploy `frontend/` to Vercel with `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_WS_URL`
+- Database: host PostgreSQL tables in Supabase
 
-```bash
-cd frontend
-vercel
-```
+## Future Scope
 
-Set all `NEXT_PUBLIC_FIREBASE_*` and `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` environment variables in Vercel before production deployment.
+Computer vision camera feeds, real ambulance GPS, city-wide signal controller integrations, historical ML forecasting, and verified Wire data ingestion.
+
+## Impact
+
+The demo highlights emergency vehicles assisted, hours saved, CO2 reduced, and traffic jams prevented.

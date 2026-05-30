@@ -65,16 +65,27 @@ class DataSourcesScreen extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    Image.network(
-                      'https://api.placeholder.com/100/40',
+                    Container(
                       height: 40,
-                      errorBuilder: (_, __, ___) => const Text(
-                        'WIRE',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 4,
-                          color: Color(0xFF18F2FF),
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(
+                            0xFF18F2FF,
+                          ).withValues(alpha: 0.35),
+                        ),
+                        color: const Color(0xFF18F2FF).withValues(alpha: 0.08),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'WIRE',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 4,
+                            color: Color(0xFF18F2FF),
+                          ),
                         ),
                       ),
                     ),
@@ -133,26 +144,43 @@ class _DataSourceTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       Container(
                         width: 6,
                         height: 6,
-                        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         status,
-                        style: TextStyle(fontSize: 12, color: color.withOpacity(0.8), fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: color.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.check_circle_outline, color: Colors.white24, size: 20),
+            const Icon(
+              Icons.check_circle_outline,
+              color: Colors.white24,
+              size: 20,
+            ),
           ],
         ),
       ),

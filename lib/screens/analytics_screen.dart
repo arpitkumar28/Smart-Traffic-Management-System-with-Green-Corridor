@@ -10,120 +10,167 @@ class AnalyticsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<TrafficController>();
+    final efficiency = controller.analytics['efficiency'] as int? ?? 84;
+    final response = controller.analytics['response_time'] as int? ?? 38;
+    final co2 = controller.analytics['co2_reduction'] as int? ?? 18;
+
     return ListView(
       padding: const EdgeInsets.all(18),
       children: [
-        const Text(
-          'Intelligence Analytics',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
-        ),
-        const Text(
-          'AI-driven traffic optimization metrics',
-          style: TextStyle(color: Colors.white60, fontSize: 12),
-        ),
+        const Text('INTELLIGENCE UNIT', style: TextStyle(fontSize: 10, color: Color(0xFF18F2FF), fontWeight: FontWeight.bold, letterSpacing: 2)),
+        const Text('Analytics & Impact', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900)),
         const SizedBox(height: 24),
         
-        // Killer Metrics Row
         Row(
           children: [
-            Expanded(
-              child: GlassCard(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Text('LIVES SAVED', style: TextStyle(fontSize: 10, color: Colors.white54, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    const Text('127', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF8CFF5A))),
-                    const Text('This Month', style: TextStyle(fontSize: 10, color: Colors.white38)),
-                  ],
-                ),
-              ),
-            ),
+            Expanded(child: _ImpactMetric(label: 'CITY EFFICIENCY', value: '$efficiency%', color: const Color(0xFF18F2FF))),
             const SizedBox(width: 12),
-            Expanded(
-              child: GlassCard(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Text('RESPONSE IMPROVED', style: TextStyle(fontSize: 10, color: Colors.white54, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    const Text('38%', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF18F2FF))),
-                    const Text('Avg. Reduction', style: TextStyle(fontSize: 10, color: Colors.white38)),
-                  ],
-                ),
-              ),
-            ),
+            Expanded(child: _ImpactMetric(label: 'RESPONSE GAIN', value: '$response%', color: const Color(0xFF8CFF5A))),
           ],
         ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(child: _ImpactMetric(label: 'CO2 REDUCTION', value: '$co2%', color: Colors.greenAccent)),
+            const SizedBox(width: 12),
+            Expanded(child: _ImpactMetric(label: 'JAMS PREVENTED', value: '${controller.analytics['trafficJamsPrevented'] ?? 32}', color: Colors.orangeAccent)),
+          ],
+        ),
+        const SizedBox(height: 24),
         
-        const SizedBox(height: 24),
-        _buildSectionHeader('Performance Index'),
-        const SizedBox(height: 12),
-        GlassCard(
-          child: Column(
-            children: [
-              _Bar(label: 'Network Efficiency', value: controller.networkFlow, color: const Color(0xFF18F2FF)),
-              _Bar(label: 'Emergency Response', value: 92, color: const Color(0xFF8CFF5A)),
-              _Bar(label: 'CO2 Emission Reduction', value: 64, color: Colors.greenAccent),
-              _Bar(label: 'Congestion Mitigation', value: 72, color: Colors.orangeAccent),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-
-        _buildSectionHeader('Data Integration'),
-        const SizedBox(height: 12),
-        const _WireIntegrationCard(),
-
-        const SizedBox(height: 24),
-        _buildSectionHeader('Traffic Volume (24h)'),
-        const SizedBox(height: 12),
-        const GlassCard(
-          height: 180,
-          child: _MiniLineChart(),
-        ),
-        const SizedBox(height: 24),
-        _buildSectionHeader('AI Optimization Prediction'),
-        const SizedBox(height: 12),
         GlassCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
-                  Icon(Icons.auto_awesome, color: Color(0xFF8CFF5A), size: 18),
+                  Icon(Icons.timeline, color: Color(0xFF18F2FF), size: 18),
                   SizedBox(width: 8),
-                  const Text('Optimal Signal Timing', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('NETWORK LOAD (24H)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
                 ],
               ),
-              const SizedBox(height: 12),
-              const Text(
-                'Based on current flow, shifting Signal SIG-03 to a 45s cycle will reduce buildup by 14% in the next 10 minutes.',
-                style: TextStyle(fontSize: 13, color: Colors.white70),
+              const SizedBox(height: 24),
+              const SizedBox(
+                height: 180,
+                width: double.infinity,
+                child: _CustomSparkline(),
               ),
-              const SizedBox(height: 16),
-              OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF18F2FF)),
-                  foregroundColor: const Color(0xFF18F2FF),
-                ),
-                child: const Text('Apply AI Recommendation'),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _Legend(color: Color(0xFF18F2FF), label: 'Predicted'),
+                  const SizedBox(width: 16),
+                  _Legend(color: Color(0xFF8CFF5A), label: 'Actual'),
+                ],
               ),
             ],
           ),
         ),
+        
+        const SizedBox(height: 24),
+        const _WireIntegrationCard(),
         const SizedBox(height: 32),
       ],
     );
   }
+}
 
-  Widget _buildSectionHeader(String title) {
-    return Text(
-      title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+class _ImpactMetric extends StatelessWidget {
+  const _ImpactMetric({required this.label, required this.value, required this.color});
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color)),
+        ],
+      ),
     );
   }
+}
+
+class _Legend extends StatelessWidget {
+  final Color color;
+  final String label;
+  const _Legend({required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(width: 8, height: 2, color: color),
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.white38)),
+      ],
+    );
+  }
+}
+
+class _CustomSparkline extends StatelessWidget {
+  const _CustomSparkline();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _SparklinePainter(),
+    );
+  }
+}
+
+class _SparklinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint1 = Paint()
+      ..color = const Color(0xFF18F2FF)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final paint2 = Paint()
+      ..color = const Color(0xFF8CFF5A)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path1 = Path()
+      ..moveTo(0, size.height * 0.7)
+      ..lineTo(size.width * 0.2, size.height * 0.4)
+      ..lineTo(size.width * 0.4, size.height * 0.8)
+      ..lineTo(size.width * 0.6, size.height * 0.3)
+      ..lineTo(size.width * 0.8, size.height * 0.5)
+      ..lineTo(size.width, size.height * 0.2);
+
+    final path2 = Path()
+      ..moveTo(0, size.height * 0.8)
+      ..lineTo(size.width * 0.2, size.height * 0.6)
+      ..lineTo(size.width * 0.4, size.height * 0.7)
+      ..lineTo(size.width * 0.6, size.height * 0.4)
+      ..lineTo(size.width * 0.8, size.height * 0.6)
+      ..lineTo(size.width, size.height * 0.4);
+
+    canvas.drawPath(path1, paint1);
+    canvas.drawPath(path2, paint2);
+
+    // Grid lines
+    final gridPaint = Paint()..color = Colors.white10..strokeWidth = 1;
+    for (int i = 1; i < 4; i++) {
+      double y = size.height * (i / 4);
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _WireIntegrationCard extends StatelessWidget {
@@ -131,163 +178,29 @@ class _WireIntegrationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const sources = ['Traffic Reports', 'Emergency Feeds', 'Weather Data', 'Road Conditions', 'Public Alerts'];
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Connected Sources',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          const Text('INTELLIGENCE SOURCES', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+          const SizedBox(height: 4),
+          const Text('Powered by Wire Connected Intelligence', style: TextStyle(color: Color(0xFF18F2FF), fontWeight: FontWeight.bold, fontSize: 10)),
+          const SizedBox(height: 20),
+          ...sources.map(
+            (source) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Color(0xFF8CFF5A), size: 16),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(source, style: const TextStyle(fontSize: 13, color: Colors.white70))),
+                ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF18F2FF).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: const Color(0xFF18F2FF).withOpacity(0.4)),
-                ),
-                child: const Text(
-                  'POWERED BY WIRE',
-                  style: TextStyle(color: Color(0xFF18F2FF), fontSize: 10, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const _SourceItem(label: 'Traffic Dashboard'),
-          const _SourceItem(label: 'Weather Feed'),
-          const _SourceItem(label: 'Emergency Reports'),
-          const _SourceItem(label: 'Road Conditions'),
-          const _SourceItem(label: 'Public Alerts'),
-        ],
-      ),
-    );
-  }
-}
-
-class _SourceItem extends StatelessWidget {
-  final String label;
-  const _SourceItem({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          const Icon(Icons.check_circle, color: Color(0xFF8CFF5A), size: 16),
-          const SizedBox(width: 12),
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
-        ],
-      ),
-    );
-  }
-}
-
-class _Bar extends StatelessWidget {
-  const _Bar({required this.label, required this.value, required this.color});
-
-  final String label;
-  final int value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(label, style: const TextStyle(fontSize: 13, color: Colors.white70)),
-              Text('$value%', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Stack(
-            children: [
-              Container(
-                height: 6,
-                decoration: BoxDecoration(
-                  color: Colors.white10,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-              FractionallySizedBox(
-                widthFactor: value / 100,
-                child: Container(
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(3),
-                    boxShadow: [
-                      BoxShadow(color: color.withOpacity(0.3), blurRadius: 4),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
-}
-
-class _MiniLineChart extends StatelessWidget {
-  const _MiniLineChart();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size.infinite,
-      painter: _ChartPainter(),
-    );
-  }
-}
-
-class _ChartPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF18F2FF)
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final fillPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [const Color(0xFF18F2FF).withOpacity(0.3), Colors.transparent],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-
-    final path = Path()
-      ..moveTo(0, size.height * 0.7)
-      ..lineTo(size.width * 0.2, size.height * 0.5)
-      ..lineTo(size.width * 0.4, size.height * 0.8)
-      ..lineTo(size.width * 0.6, size.height * 0.3)
-      ..lineTo(size.width * 0.8, size.height * 0.4)
-      ..lineTo(size.width, size.height * 0.1);
-
-    final fillPath = Path.from(path)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-
-    canvas.drawPath(fillPath, fillPaint);
-    canvas.drawPath(path, paint);
-
-    // Draw data points
-    final pointPaint = Paint()..color = Colors.white;
-    canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.3), 4, pointPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

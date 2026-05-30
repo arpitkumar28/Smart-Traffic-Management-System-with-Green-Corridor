@@ -5,7 +5,7 @@ import { Ambulance, Bell, Cpu, MapPinned, RadioTower, Route, Zap } from "lucide-
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button, Card } from "@/components/ui";
 import { alerts, signals, stats, trafficSeries } from "@/lib/data";
-import { triggerEmergencyCorridor } from "@/lib/firebase";
+import { triggerEmergencyCorridor } from "@/lib/api";
 
 export function Dashboard({ page = "dashboard" }: { page?: string }) {
   return (
@@ -46,7 +46,7 @@ export function Dashboard({ page = "dashboard" }: { page?: string }) {
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-xl font-bold">Emergency Route Map</h2>
-              <p className="text-sm text-white/55">Google Maps-ready corridor visualization with simulated fallback.</p>
+              <p className="text-sm text-white/55">OpenStreetMap corridor visualization with realtime WebSocket-ready state.</p>
             </div>
             <MapPinned className="text-cyan" />
           </div>

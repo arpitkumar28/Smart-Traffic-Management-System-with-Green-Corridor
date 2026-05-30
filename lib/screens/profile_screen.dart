@@ -61,7 +61,9 @@ class ProfileScreen extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const DataSourcesScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const DataSourcesScreen(),
+                ),
               );
             },
           ),
@@ -70,7 +72,10 @@ class ProfileScreen extends StatelessWidget {
         Center(
           child: TextButton(
             onPressed: () {},
-            child: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
+            child: const Text(
+              'Logout',
+              style: TextStyle(color: Colors.redAccent),
+            ),
           ),
         ),
       ],

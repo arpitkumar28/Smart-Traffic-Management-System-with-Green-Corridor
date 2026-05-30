@@ -1,26 +1,29 @@
 # GreenFlow AI API
 
-## Realtime Database Paths
+Base URL: `http://127.0.0.1:8000`
 
-| Path | Purpose |
-| --- | --- |
-| `traffic/live` | Live network flow, vehicles per minute, and wait time |
-| `signals` | Signal status, congestion load, and emergency priority mode |
-| `greenCorridor/current` | Active emergency vehicle, route, ETA, and time saved |
-| `alerts` | Realtime operational alerts for web and mobile clients |
+## REST Endpoints
 
-## Callable Functions
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/dashboard` | Hero dashboard metrics |
+| `GET` | `/signals` | All traffic signals |
+| `POST` | `/signals/{signal_id}/state?status=green` | Manual signal state update |
+| `GET` | `/alerts` | Realtime alert list |
+| `POST` | `/alerts` | Create traffic or emergency alert |
+| `GET` | `/analytics` | Efficiency, response, CO2, and impact metrics |
+| `GET` | `/events` | Live event feed |
+| `GET` | `/prediction` | Rule-based AI congestion prediction |
+| `POST` | `/ambulance/activate` | Activate Green Corridor AI |
 
-### `activateGreenCorridor`
-
-Activates an emergency corridor and writes synchronized signal updates.
+## Ambulance Activation
 
 Request:
 
 ```json
 {
-  "vehicleId": "EV-204",
-  "route": ["SIG-04", "SIG-01", "SIG-02", "SIG-05"]
+  "ambulanceId": "A-204",
+  "destination": "City Hospital"
 }
 ```
 
@@ -28,30 +31,61 @@ Response:
 
 ```json
 {
-  "active": true,
-  "vehicleId": "EV-204",
-  "route": ["SIG-04", "SIG-01", "SIG-02", "SIG-05"],
-  "etaSeconds": 420,
-  "timeSavedSeconds": 210,
-  "status": "active"
+  "status": "Green Corridor Activated",
+  "etaBefore": 8,
+  "etaAfter": 4,
+  "timeSaved": 4
 }
 ```
 
-## Firestore Collections
+## WebSocket
 
-| Collection | Purpose |
-| --- | --- |
-| `users` | User profiles and role metadata |
-| `emergencyEvents` | Historical green corridor activations |
-| `trafficReports` | Daily congestion, signal, and eco-mode summaries |
+Connect to `/ws`.
 
-## Roles
+Broadcast event types:
 
-Suggested Firebase custom claims:
+- `signal_updates`
+- `ambulance_updates`
+- `alert_updates`
+- `event_updates`
+- `analytics_updates`
 
-| Role | Permissions |
-| --- | --- |
-| `admin` | Full dashboard and signal control |
-| `operator` | Activate corridor and manage alerts |
-| `driver` | Mobile emergency interface |
-| `citizen` | Read traffic alerts and congestion status |
+## Supabase Tables
+
+```sql
+create table signals (
+  id text primary key,
+  name text not null,
+  status text not null,
+  traffic_load integer not null
+);
+
+create table ambulances (
+  id text primary key,
+  vehicle_no text not null,
+  destination text not null,
+  eta integer not null,
+  status text not null
+);
+
+create table alerts (
+  id bigint generated always as identity primary key,
+  title text not null,
+  description text not null,
+  created_at timestamptz default now()
+);
+
+create table analytics (
+  id bigint generated always as identity primary key,
+  efficiency integer not null,
+  response_time integer not null,
+  co2_reduction integer not null
+);
+
+create table events (
+  id bigint generated always as identity primary key,
+  message text not null,
+  type text not null,
+  created_at timestamptz default now()
+);
+```

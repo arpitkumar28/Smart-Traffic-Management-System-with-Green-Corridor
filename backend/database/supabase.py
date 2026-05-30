@@ -39,9 +39,11 @@ class DemoStore:
             "trafficJamsPrevented": 64,
         }
         self.events: list[dict[str, Any]] = [
-            {"id": 1, "message": "AI detected congestion", "type": "ai", "created_at": "10:21 PM"},
-            {"id": 2, "message": "Signal SIG-03 optimized", "type": "signal", "created_at": "10:22 PM"},
-            {"id": 3, "message": "Ambulance detected", "type": "emergency", "created_at": "10:23 PM"},
+            {"id": 1, "message": "AI detected congestion", "type": "ai", "created_at": "10:20 PM"},
+            {"id": 2, "message": "SIG-03 optimized", "type": "signal", "created_at": "10:21 PM"},
+            {"id": 3, "message": "Emergency vehicle detected", "type": "emergency", "created_at": "10:22 PM"},
+            {"id": 4, "message": "Green Corridor activated", "type": "green_corridor", "created_at": "10:23 PM"},
+            {"id": 5, "message": "ETA reduced by 4 minutes", "type": "analytics", "created_at": "10:24 PM"},
         ]
 
     def event(self, message: str, event_type: str) -> dict[str, Any]:

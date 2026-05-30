@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Activity, Ambulance, BarChart3, Bot, Gauge, Home, Map, Settings, ShieldCheck } from "lucide-react";
+import { Activity, Ambulance, BarChart3, Bot, Gauge, Home, Map, RadioTower, Settings, ShieldCheck } from "lucide-react";
 import { cn } from "@/components/ui";
 
 const nav = [
   { href: "/", label: "Landing", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: Gauge },
+  { href: "/map", label: "Live Map", icon: Map },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/emergency", label: "Emergency", icon: Ambulance },
   { href: "/signals", label: "Signals", icon: Activity },
   { href: "/ai-monitoring", label: "AI Monitor", icon: Bot },
+  { href: "/wire", label: "Wire Intel", icon: RadioTower },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

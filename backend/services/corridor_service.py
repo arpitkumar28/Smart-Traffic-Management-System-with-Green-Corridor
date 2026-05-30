@@ -27,8 +27,9 @@ async def activate_green_corridor(ambulance_id: str, destination: str) -> dict[s
     demo_store.analytics["emergencyVehiclesAssisted"] += 1
     demo_store.analytics["hoursSaved"] += 1
 
-    event = demo_store.event("Green Corridor activated", "emergency")
-    demo_store.event("ETA reduced by 4 minutes", "analytics")
+    detected_event = demo_store.event("Emergency vehicle detected", "emergency")
+    event = demo_store.event("Green Corridor activated", "green_corridor")
+    eta_event = demo_store.event("ETA reduced by 4 minutes", "analytics")
     demo_store.alerts.insert(
         0,
         {
@@ -49,12 +50,20 @@ async def activate_green_corridor(ambulance_id: str, destination: str) -> dict[s
 
     response = {
         "status": "Green Corridor Activated",
+        "type": "green_corridor",
+        "ambulance": ambulance_id,
+        "vehicleId": ambulance_id,
+        "destination": destination,
         "etaBefore": eta_before,
         "etaAfter": eta_after,
         "timeSaved": eta_before - eta_after,
+        "signalsOptimized": len(route_signal_ids),
+        "route": list(route_signal_ids),
     }
+    await manager.broadcast("green_corridor", response)
     await manager.broadcast("ambulance_updates", response)
     await manager.broadcast("signal_updates", {"signals": demo_store.signals})
     await manager.broadcast("event_updates", {"event": event, "events": demo_store.events})
+    await manager.broadcast("alert_updates", {"alerts": demo_store.alerts})
     await manager.broadcast("analytics_updates", demo_store.analytics)
     return response
