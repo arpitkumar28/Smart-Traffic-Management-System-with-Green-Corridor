@@ -1,3 +1,5 @@
+"use client";
+
 import { LiveMap } from "@/components/LiveMap";
 import { Shell } from "@/components/Shell";
 

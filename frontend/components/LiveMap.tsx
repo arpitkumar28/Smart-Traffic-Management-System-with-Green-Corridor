@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapContainer, Marker, Polyline, Popup, TileLayer } from "react-leaflet";
 import { fetchSignals, retryRequest, type Signal } from "@/lib/api";
 
 function createIcon(L: typeof import("leaflet"), color: string) {
@@ -15,13 +14,17 @@ export function LiveMap() {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
   const [leafletModule, setLeafletModule] = useState<typeof import("leaflet") | null>(null);
+  const [reactLeaflet, setReactLeaflet] = useState<any>(null);
   
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    import("leaflet")
-      .then((L) => setLeafletModule(L))
-      .catch((error) => console.error("Failed to load Leaflet in browser:", error));
+    Promise.all([import("react-leaflet"), import("leaflet")])
+      .then(([RL, L]) => {
+        setReactLeaflet(RL);
+        setLeafletModule(L);
+      })
+      .catch((error) => console.error("Failed to load map libraries in browser:", error));
   }, []);
 
   // Default Delhi city center
@@ -80,42 +83,46 @@ export function LiveMap() {
         <div className="h-full w-full flex items-center justify-center text-white/50">
           Loading map data...
         </div>
-      ) : (
-        <MapContainer center={mapCenter} zoom={14} className="h-full w-full">
-          <TileLayer attribution="OpenStreetMap" url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {route.length > 1 && <Polyline positions={route} color="#8cff5a" weight={7} />}
+      ) : reactLeaflet ? (
+        <reactLeaflet.MapContainer center={mapCenter} zoom={14} className="h-full w-full">
+          <reactLeaflet.TileLayer attribution="OpenStreetMap" url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {route.length > 1 && <reactLeaflet.Polyline positions={route} color="#8cff5a" weight={7} />}
           {route.length > 0 && (
             <>
-              <Marker
+              <reactLeaflet.Marker
                 position={route[route.length - 1]}
                 icon={leafletModule ? createIcon(leafletModule, "#18f2ff") : undefined}
               >
-                <Popup>Destination</Popup>
-              </Marker>
-              <Marker
+                <reactLeaflet.Popup>Destination</reactLeaflet.Popup>
+              </reactLeaflet.Marker>
+              <reactLeaflet.Marker
                 position={route[0]}
                 icon={leafletModule ? createIcon(leafletModule, "#8cff5a") : undefined}
               >
-                <Popup>Ambulance Position</Popup>
-              </Marker>
+                <reactLeaflet.Popup>Ambulance Position</reactLeaflet.Popup>
+              </reactLeaflet.Marker>
             </>
           )}
           {signals.map((signal) => (
-            <Marker
+            <reactLeaflet.Marker
               key={signal.id}
               position={[signal.lat, signal.lng]}
               icon={leafletModule ? createIcon(leafletModule, getStatusColor(signal.status)) : undefined}
             >
-              <Popup>
+              <reactLeaflet.Popup>
                 <div className="text-sm">
                   <p className="font-bold">{signal.name}</p>
                   <p>Status: {signal.status}</p>
                   <p>Load: {Math.round(signal.traffic_load)}%</p>
                 </div>
-              </Popup>
-            </Marker>
+              </reactLeaflet.Popup>
+            </reactLeaflet.Marker>
           ))}
-        </MapContainer>
+        </reactLeaflet.MapContainer>
+      ) : (
+        <div className="h-full w-full flex items-center justify-center text-white/50">
+          Loading map UI...
+        </div>
       )}
     </div>
   );
