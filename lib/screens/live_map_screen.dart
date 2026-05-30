@@ -8,7 +8,8 @@ import 'package:provider/provider.dart';
 import '../state/traffic_controller.dart';
 
 class LiveMapScreen extends StatefulWidget {
-  const LiveMapScreen({super.key});
+  final bool isHeroMode;
+  const LiveMapScreen({super.key, this.isHeroMode = false});
 
   @override
   State<LiveMapScreen> createState() => _LiveMapScreenState();
@@ -47,6 +48,11 @@ class _LiveMapScreenState extends State<LiveMapScreen>
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<TrafficController>();
+
+    if (widget.isHeroMode) {
+      return _buildMapSection(controller);
+    }
+
     return Column(
       children: [
         // 1. Redesigned Header - Smart City Operations Center
@@ -185,6 +191,7 @@ class _LiveMapScreenState extends State<LiveMapScreen>
                   urlTemplate:
                       'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                   subdomains: const ['a', 'b', 'c', 'd'],
+                  retinaMode: RetinaMode.isHighDensity(context),
                 ),
                 // Routes if emergency active
                 if (controller.emergencyActive)

@@ -18,7 +18,11 @@ export default function AnalyticsPage() {
         setError(null);
         const data = await retryRequest(() => fetchAnalytics());
         // Handle both array and object responses
-        const analyticsArray = Array.isArray(data) ? data : data?.analytics || [];
+        const analyticsArray = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.analytics)
+            ? data.analytics
+            : [];
         setAnalyticsData(analyticsArray.slice(0, 7));
       } catch (err) {
         console.error("Failed to load analytics:", err);

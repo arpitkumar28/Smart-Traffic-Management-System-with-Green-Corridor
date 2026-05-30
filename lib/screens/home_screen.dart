@@ -410,7 +410,7 @@ class _MapHeroCard extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(
                   bottom: Radius.circular(18),
                 ),
-                child: const LiveMapScreen(),
+                child: const LiveMapScreen(isHeroMode: true),
               ),
             ),
           ],
@@ -1200,7 +1200,7 @@ class HeroMap extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
-        child: LiveMapScreen(),
+        child: const LiveMapScreen(isHeroMode: true),
       ),
     );
   }
