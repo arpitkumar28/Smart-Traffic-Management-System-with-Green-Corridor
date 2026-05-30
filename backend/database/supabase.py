@@ -16,14 +16,19 @@ def get_supabase() -> Client | None:
 
 class DemoStore:
     def __init__(self) -> None:
+        # Delhi Coordinates
         self.signals: list[dict[str, Any]] = [
-            {"id": "SIG-01", "name": "Civic Center", "status": "green", "traffic_load": 35},
-            {"id": "SIG-02", "name": "Metro Spine", "status": "yellow", "traffic_load": 60},
-            {"id": "SIG-03", "name": "Tech Park", "status": "red", "traffic_load": 90},
-            {"id": "SIG-04", "name": "City Hospital Link", "status": "green", "traffic_load": 20},
+            {"id": "SIG-01", "name": "Civic Center", "status": "green", "traffic_load": 35, "lat": 28.6328, "lng": 77.2195},
+            {"id": "SIG-02", "name": "Metro Spine", "status": "yellow", "traffic_load": 60, "lat": 28.6139, "lng": 77.209},
+            {"id": "SIG-03", "name": "Tech Park", "status": "red", "traffic_load": 90, "lat": 28.6448, "lng": 77.2321},
+            {"id": "SIG-04", "name": "City Hospital Link", "status": "green", "traffic_load": 20, "lat": 28.6159, "lng": 77.215},
+            {"id": "SIG-05", "name": "South Park", "status": "green", "traffic_load": 22, "lat": 28.6000, "lng": 77.2300},
         ]
         self.ambulances: list[dict[str, Any]] = [
-            {"id": "A-204", "vehicle_no": "A-204", "destination": "City Hospital", "eta": 8, "status": "Standby"}
+            {"id": "AMB-102", "type": "ambulance", "vehicle_no": "DL-1C-AMB-102", "destination": "City Hospital", "eta": 8, "status": "Standby", "lat": 28.6200, "lng": 77.2000}
+        ]
+        self.fire_brigades: list[dict[str, Any]] = [
+            {"id": "FIRE-09", "type": "fire_brigade", "vehicle_no": "DL-1C-FIRE-09", "destination": "None", "eta": 0, "status": "Station", "lat": 28.6250, "lng": 77.2250}
         ]
         self.alerts: list[dict[str, Any]] = [
             {"id": 1, "title": "AI Alert", "description": "AI detected congestion near Tech Park", "created_at": "10:21 PM"},

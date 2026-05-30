@@ -33,6 +33,7 @@ export interface EmergencyVehicle {
   lat: number;
   lng: number;
   destination?: string;
+  status?: string;
 }
 
 export interface Alert {
@@ -67,6 +68,7 @@ export interface GreenCorridorResponse {
   signalsOptimized: number;
   signalsSynced?: number;
   route: string[];
+  route_coords?: [number, number][];
   priorityScore?: number;
 }
 
@@ -193,9 +195,16 @@ export async function fetchEvents(): Promise<TrafficEvent[]> {
 // PREDICTION
 // ============================================================================
 
-export async function fetchPrediction(): Promise<unknown> {
+export interface AIRecommendation {
+  zone: string;
+  risk: string;
+  confidence: number;
+  recommendedAction: string;
+}
+
+export async function fetchPrediction(): Promise<AIRecommendation> {
   try {
-    const { data } = await api.get("/prediction");
+    const { data } = await api.get<AIRecommendation>("/prediction");
     return data;
   } catch (error) {
     throw handleApiError(error);
@@ -203,11 +212,20 @@ export async function fetchPrediction(): Promise<unknown> {
 }
 
 // ============================================================================
-// AMBULANCE / GREEN CORRIDOR
+// AMBULANCE / EMERGENCY
 // ============================================================================
 
+export async function fetchEmergencyVehicles(): Promise<EmergencyVehicle[]> {
+    try {
+      const { data } = await api.get<EmergencyVehicle[]>("/ambulance");
+      return data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  }
+
 export async function triggerEmergencyCorridor(
-  ambulanceId: string = "A-204",
+  ambulanceId: string = "AMB-102",
   destination: string = "City Hospital"
 ): Promise<GreenCorridorResponse> {
   try {
