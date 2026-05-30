@@ -191,6 +191,7 @@ class _LiveMapScreenState extends State<LiveMapScreen>
                   urlTemplate:
                       'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                   subdomains: const ['a', 'b', 'c', 'd'],
+                  userAgentPackageName: 'com.greenflow.ai',
                   retinaMode: RetinaMode.isHighDensity(context),
                 ),
                 // Routes if emergency active
