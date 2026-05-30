@@ -1,14 +1,22 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { fetchSignals, retryRequest, type Signal, openGreenFlowSocket, type EmergencyVehicle, type WebSocketMessage } from "@/lib/api";
+
+const DEFAULT_SIGNALS: Signal[] = [
+  { id: "metro-junction", name: "Metro Junction", lat: 28.6139, lng: 77.209, status: "red", traffic_load: 82 },
+  { id: "hospital-road", name: "Hospital Road", lat: 28.6159, lng: 77.215, status: "green", traffic_load: 35 },
+  { id: "civic-center", name: "Civic Center", lat: 28.6328, lng: 77.2195, status: "yellow", traffic_load: 65 },
+  { id: "south-park", name: "South Park", lat: 28.6000, lng: 77.2300, status: "green", traffic_load: 22 },
+];
 
 export default function LiveMap() {
   const [mounted, setMounted] = useState(false);
-  const [signals, setSignals] = useState<Signal[]>([]);
+  const [signals, setSignals] = useState<Signal[]>(DEFAULT_SIGNALS);
   const [emergencyVehicles, setEmergencyVehicles] = useState<EmergencyVehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [MapComponents, setMapComponents] = useState<any>(null);
+  const [activeRoute, setActiveRoute] = useState<[number, number][]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -52,8 +60,16 @@ export default function LiveMap() {
     const loadSignals = async () => {
       try {
         const data = await retryRequest(() => fetchSignals());
-        if (Array.isArray(data)) {
-          setSignals(data);
+        if (Array.isArray(data) && data.length > 0) {
+          // Merge API signals with defaults to ensure specific junctions are present
+          const apiSignals = data.filter(s => s.lat && s.lng);
+          const merged = [...DEFAULT_SIGNALS];
+          apiSignals.forEach(as => {
+            const idx = merged.findIndex(ms => ms.id === as.id || ms.name === as.name);
+            if (idx > -1) merged[idx] = as;
+            else merged.push(as);
+          });
+          setSignals(merged);
         }
       } catch (err) {
         console.error("Signal fetch failed:", err);
@@ -64,7 +80,7 @@ export default function LiveMap() {
 
     loadSignals();
     
-    // Set up WebSocket for real-time updates (Emergency Vehicles, Signal Updates)
+    // Set up WebSocket for real-time updates
     const socket = openGreenFlowSocket((msg: WebSocketMessage) => {
       if (msg.type === "EMERGENCY_VEHICLE_UPDATE") {
         const vehicle = msg.payload as EmergencyVehicle;
@@ -77,9 +93,26 @@ export default function LiveMap() {
           }
           return [...prev, vehicle];
         });
+        
+        // If it's a new emergency, simulate route highlighting
+        if (vehicle.destination) {
+          // Mock route for demo: current position to a signal
+          setActiveRoute([[vehicle.lat, vehicle.lng], [28.6139, 77.209], [28.6159, 77.215]]);
+        }
       } else if (msg.type === "SIGNAL_UPDATE") {
         const updatedSignal = msg.payload as Signal;
         setSignals(prev => prev.map(s => s.id === updatedSignal.id ? updatedSignal : s));
+      } else if (msg.type === "GREEN_CORRIDOR_ACTIVATED") {
+          // Highlight route and update signals to green/priority
+          const payload = msg.payload;
+          if (payload.route_coords) {
+              setActiveRoute(payload.route_coords);
+          }
+          if (payload.signal_ids) {
+              setSignals(prev => prev.map(s => 
+                  payload.signal_ids.includes(s.id) ? { ...s, status: "priority" } : s
+              ));
+          }
       }
     });
 
@@ -106,13 +139,7 @@ export default function LiveMap() {
   const defaultCenter: [number, number] = [28.6139, 77.209];
   const activeSignals = signals.filter(isValidCoord);
   
-  const mapCenter: [number, number] = activeSignals.length > 0 
-    ? [activeSignals[0].lat, activeSignals[0].lng] 
-    : defaultCenter;
-
-  const greenCorridorRoute: [number, number][] = activeSignals
-    .filter(s => s.status === "priority")
-    .map(s => [s.lat, s.lng] as [number, number]);
+  const mapCenter: [number, number] = defaultCenter;
 
   const getTrafficColor = (load: number) => {
     if (load > 80) return "#ff3b30"; // Heavy (Red)
@@ -124,55 +151,58 @@ export default function LiveMap() {
     const s = status?.toLowerCase() || "";
     if (s === "red") return "#ff3b30";
     if (s === "yellow") return "#ffb020";
-    if (s === "priority") return "#00f2ff"; // Cyan for Green Corridor
+    if (s === "priority" || s === "green_corridor") return "#00f2ff"; // Cyan for Green Corridor
     return "#8cff5a"; // Green
   };
 
   return (
-    <div className="h-[calc(100vh-10rem)] w-full overflow-hidden rounded-xl border border-white/10 bg-[#07171b] shadow-2xl">
+    <div className="h-[calc(100vh-10rem)] w-full overflow-hidden rounded-xl border border-white/10 bg-[#07171b] shadow-2xl relative">
       <MapContainer 
         center={mapCenter} 
-        zoom={13} 
+        zoom={14} 
         className="h-full w-full"
         scrollWheelZoom={true}
       >
         <TileLayer 
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
-          className="map-tiles"
+          className="map-tiles grayscale contrast-125 invert"
         />
         
-        {/* Green Corridor Polyline */}
-        {greenCorridorRoute.length > 1 && (
+        {/* Active Route / Green Corridor Polyline */}
+        {activeRoute.length > 1 && (
           <Polyline 
-            positions={greenCorridorRoute} 
+            positions={activeRoute} 
             color="#00f2ff" 
-            weight={8} 
-            opacity={0.6} 
-            dashArray="10, 15"
+            weight={10} 
+            opacity={0.8} 
+            dashArray="1, 15"
+            lineCap="round"
           />
         )}
 
-        {/* Signal Markers with Congestion Heatmap */}
+        {/* Signal Markers */}
         {activeSignals.map((signal) => {
+          const statusColor = getSignalStatusColor(signal.status);
           const signalIcon = L.divIcon({
             className: "signal-icon",
             html: `
               <div style="
-                width: 24px; 
-                height: 24px; 
-                background: ${getSignalStatusColor(signal.status)}; 
-                border: 3px solid #000; 
+                width: 28px; 
+                height: 28px; 
+                background: ${statusColor}; 
+                border: 2px solid white; 
                 border-radius: 50%; 
-                box-shadow: 0 0 15px ${getSignalStatusColor(signal.status)};
+                box-shadow: 0 0 20px ${statusColor};
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                transition: all 0.5s ease;
               ">
-                <div style="width: 8px; height: 8px; background: white; border-radius: 50%; opacity: 0.5;"></div>
+                <div style="width: 6px; height: 6px; background: white; border-radius: 50%; opacity: 0.8;"></div>
               </div>`,
-            iconSize: [24, 24],
-            iconAnchor: [12, 12],
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
           });
 
           return (
@@ -187,7 +217,7 @@ export default function LiveMap() {
                   <div className="mt-2 space-y-1 text-xs">
                     <p className="flex justify-between">
                       <span>Signal:</span> 
-                      <span className="font-bold uppercase" style={{ color: getSignalStatusColor(signal.status) }}>{signal.status}</span>
+                      <span className="font-bold uppercase" style={{ color: statusColor }}>{signal.status}</span>
                     </p>
                     <p className="flex justify-between">
                       <span>Congestion:</span> 
@@ -213,23 +243,24 @@ export default function LiveMap() {
           const vehicleIcon = L.divIcon({
             className: "emergency-icon",
             html: `
-              <div class="animate-pulse" style="
-                width: 32px; 
-                height: 32px; 
+              <div class="animate-bounce" style="
+                width: 36px; 
+                height: 36px; 
                 background: #ff3b30; 
-                border: 2px solid white; 
-                border-radius: 6px; 
-                box-shadow: 0 0 20px #ff3b30;
+                border: 3px solid white; 
+                border-radius: 8px; 
+                box-shadow: 0 0 25px #ff3b30;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 color: white;
-                font-size: 16px;
+                font-size: 20px;
+                z-index: 1000;
               ">
                 ${vehicle.type === "ambulance" ? "🚑" : "🚒"}
               </div>`,
-            iconSize: [32, 32],
-            iconAnchor: [16, 16],
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
           });
 
           return (
@@ -255,19 +286,19 @@ export default function LiveMap() {
         <h4 className="mb-2 font-bold uppercase tracking-wider text-cyan">Live Indicators</h4>
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-[#8cff5a]" /> <span>Low Traffic</span>
+            <div className="h-3 w-3 rounded-full bg-[#8cff5a]" /> <span>🟢 Green (Low)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-[#ffb020]" /> <span>Medium Traffic</span>
+            <div className="h-3 w-3 rounded-full bg-[#ffb020]" /> <span>🟡 Yellow (Medium)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-[#ff3b30]" /> <span>Heavy Traffic</span>
+            <div className="h-3 w-3 rounded-full bg-[#ff3b30]" /> <span>🔴 Red (Heavy)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-[#00f2ff] shadow-[0_0_8px_#00f2ff]" /> <span>Green Corridor Priority</span>
+            <div className="h-3 w-3 rounded-full bg-[#00f2ff] shadow-[0_0_8px_#00f2ff]" /> <span>🔵 Priority Corridor</span>
           </div>
           <div className="flex items-center gap-2">
-            <span>🚑 / 🚒</span> <span>Emergency Vehicle</span>
+            <span className="text-lg">🚑</span> <span>Emergency Active</span>
           </div>
         </div>
       </div>
