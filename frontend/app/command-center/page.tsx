@@ -5,7 +5,7 @@ import { AlertTriangle, BarChart3, BatteryCharging, Bell, Bolt, CloudRain, Heart
 import { Card } from "@/components/ui";
 import { CommandCenterCharts } from "@/components/command-center/CommandCenterCharts";
 import { CommandCenterMap } from "@/components/command-center/CommandCenterMap";
-import { fetchDashboardMetrics, fetchAlerts, fetchEvents, retryRequest, type DashboardMetrics, type Alert, type Event } from "@/lib/api";
+import { fetchDashboardMetrics, fetchAlerts, fetchEvents, retryRequest, type DashboardMetrics, type Alert, type TrafficEvent } from "@/lib/api";
 import {
   aiDecisions,
   commandCenterBrand,
@@ -30,7 +30,7 @@ const statusTone = {
 export default function CommandCenterPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<TrafficEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

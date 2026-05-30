@@ -5,7 +5,7 @@ import { Ambulance, AlertCircle, Siren, TimerReset, RotateCw } from "lucide-reac
 import type { ReactNode } from "react";
 import { Shell } from "@/components/Shell";
 import { Button, Card } from "@/components/ui";
-import { triggerEmergencyCorridor, fetchEvents, openGreenFlowSocket, type GreenCorridorResponse, type Event } from "@/lib/api";
+import { triggerEmergencyCorridor, fetchEvents, openGreenFlowSocket, type GreenCorridorResponse, type TrafficEvent } from "@/lib/api";
 
 export default function EmergencyPage() {
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,7 @@ export default function EmergencyPage() {
     eta: string;
     timeSaved: string;
   } | null>(null);
-  const [recentEvents, setRecentEvents] = useState<Event[]>([]);
+  const [recentEvents, setRecentEvents] = useState<TrafficEvent[]>([]);
 
   useEffect(() => {
     // Fetch initial events
@@ -29,7 +29,7 @@ export default function EmergencyPage() {
     const socket = openGreenFlowSocket(
       (message) => {
         if (message.type === "event_update") {
-          const event = message.payload as Event;
+          const event = message.payload as TrafficEvent;
           setRecentEvents((prev) => [event, ...prev].slice(0, 3));
         }
       },

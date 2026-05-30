@@ -35,7 +35,7 @@ export interface Alert {
   created_at?: string;
 }
 
-export interface Event {
+export interface TrafficEvent {
   id: number;
   event: string;
   timestamp: string;
@@ -172,9 +172,9 @@ export async function fetchAnalytics(): Promise<Record<string, unknown>> {
 // EVENTS
 // ============================================================================
 
-export async function fetchEvents(): Promise<Event[]> {
+export async function fetchEvents(): Promise<TrafficEvent[]> {
   try {
-    const { data } = await api.get<Event[]>("/events");
+    const { data } = await api.get<TrafficEvent[]>("/events");
     return data;
   } catch (error) {
     throw handleApiError(error);
@@ -227,7 +227,7 @@ export interface WebSocketMessage {
 
 export function openGreenFlowSocket(
   onMessage: (event: WebSocketMessage) => void,
-  onError?: (error: Event) => void,
+  onError?: (error: any) => void,
   onClose?: () => void
 ): WebSocket {
   const socket = new WebSocket(wsUrl);

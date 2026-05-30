@@ -16,6 +16,7 @@ import {
   type DashboardMetrics,
   type Signal,
   type Alert,
+  type TrafficEvent,
 } from "@/lib/api";
 
 interface TrafficDataPoint {

@@ -2,19 +2,28 @@
 
 import { useEffect, useState } from "react";
 import { MapContainer, Marker, Polyline, Popup, TileLayer } from "react-leaflet";
-import L from "leaflet";
 import { fetchSignals, retryRequest, type Signal } from "@/lib/api";
 
-const icon = (color: string) =>
-  L.divIcon({
+function createIcon(L: typeof import("leaflet"), color: string) {
+  return L.divIcon({
     className: "",
     html: `<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 20px ${color}"></div>`,
   });
+}
 
 export function LiveMap() {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [leafletModule, setLeafletModule] = useState<typeof import("leaflet") | null>(null);
   
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    import("leaflet")
+      .then((L) => setLeafletModule(L))
+      .catch((error) => console.error("Failed to load Leaflet in browser:", error));
+  }, []);
+
   // Default Delhi city center
   const defaultCenter: [number, number] = [28.6139, 77.209];
   
@@ -77,19 +86,25 @@ export function LiveMap() {
           {route.length > 1 && <Polyline positions={route} color="#8cff5a" weight={7} />}
           {route.length > 0 && (
             <>
-              <Marker position={route[route.length - 1]} icon={icon("#18f2ff")}>
+              <Marker
+                position={route[route.length - 1]}
+                icon={leafletModule ? createIcon(leafletModule, "#18f2ff") : undefined}
+              >
                 <Popup>Destination</Popup>
               </Marker>
-              <Marker position={route[0]} icon={icon("#8cff5a")}>
+              <Marker
+                position={route[0]}
+                icon={leafletModule ? createIcon(leafletModule, "#8cff5a") : undefined}
+              >
                 <Popup>Ambulance Position</Popup>
               </Marker>
             </>
           )}
           {signals.map((signal) => (
-            <Marker 
-              key={signal.id} 
-              position={[signal.lat, signal.lng]} 
-              icon={icon(getStatusColor(signal.status))}
+            <Marker
+              key={signal.id}
+              position={[signal.lat, signal.lng]}
+              icon={leafletModule ? createIcon(leafletModule, getStatusColor(signal.status)) : undefined}
             >
               <Popup>
                 <div className="text-sm">
