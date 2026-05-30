@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/traffic_controller.dart';
-import '../widgets/glass_card.dart';
 
 class EmergencyScreen extends StatelessWidget {
   const EmergencyScreen({super.key});
@@ -16,83 +15,283 @@ class EmergencyScreen extends StatelessWidget {
       return _ActivationFlowView(stage: controller.activationStage);
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(18),
+    if (controller.emergencyActive) {
+      return _ActiveCorridorHero(controller: controller);
+    }
+
+    return _EmergencyStandbyView();
+  }
+}
+
+class _EmergencyStandbyView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 40),
+          const Text(
+            'Emergency Response',
+            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          Text(
+            'System is monitoring for high-priority signals.',
+            style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.5)),
+          ),
+          const Spacer(),
+          Center(
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(40),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.03),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.security, color: Colors.white.withOpacity(0.1), size: 100),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'READY FOR ACTION',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                    color: Colors.white24,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => context.read<TrafficController>().activateEmergencyMode(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.sos, size: 24),
+                  SizedBox(width: 12),
+                  Text(
+                    'TRIGGER GREEN CORRIDOR',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActiveCorridorHero extends StatelessWidget {
+  final TrafficController controller;
+  const _ActiveCorridorHero({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.red.withOpacity(0.2),
+            Colors.transparent,
+          ],
+        ),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 40),
+          _LivePulsingBadge(),
+          const SizedBox(height: 24),
+          const Text(
+            'GREEN CORRIDOR ACTIVE',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 4,
+              color: Color(0xFF8CFF5A),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            controller.emergency.vehicleId,
+            style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          const SizedBox(height: 40),
+          
+          // Destination Info
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _HeroMetaTile(label: 'Destination', value: controller.emergency.destination),
+                _HeroMetaTile(label: 'Priority', value: 'Level 1 (Critical)', alignEnd: true),
+              ],
+            ),
+          ),
+
+          const Spacer(),
+
+          // Immersive ETA Animation
+          _ETADisplay(
+            before: controller.etaBeforeMinutes,
+            after: controller.etaAfterMinutes,
+          ),
+
+          const Spacer(),
+
+          // Bottom Stats
+          Container(
+            padding: const EdgeInsets.all(32),
+            margin: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _MiniMetric(label: 'Time Saved', value: '4 min', icon: Icons.speed),
+                _MiniMetric(label: 'Signals Opt.', value: '12', icon: Icons.traffic),
+                _MiniMetric(label: 'Path Integrity', value: '100%', icon: Icons.verified_user),
+              ],
+            ),
+          ),
+
+          TextButton(
+            onPressed: () => controller.deactivateEmergencyMode(),
+            child: Text(
+              'End Simulation',
+              style: TextStyle(color: Colors.white.withOpacity(0.3), fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+}
+
+class _LivePulsingBadge extends StatefulWidget {
+  @override
+  State<_LivePulsingBadge> createState() => _LivePulsingBadgeState();
+}
+
+class _LivePulsingBadgeState extends State<_LivePulsingBadge> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat(reverse: true);
+  }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.red.withOpacity(0.1 + (_controller.value * 0.2)),
+            border: Border.all(color: Colors.red.withOpacity(0.5 * _controller.value), width: 2),
+          ),
+          child: const Icon(Icons.emergency, color: Colors.red, size: 40),
+        );
+      },
+    );
+  }
+}
+
+class _HeroMetaTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool alignEnd;
+  const _HeroMetaTile({required this.label, required this.value, this.alignEnd = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Command Center',
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-          ),
-        ),
-        const Text(
-          'EMERGENCY RESPONSE UNIT',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF18F2FF),
-            letterSpacing: 2,
-          ),
-        ),
-        const SizedBox(height: 24),
-        if (!controller.emergencyActive)
-          _StandbyView()
-        else
-          Column(
-            children: [
-              _GreenCorridorHero(controller: controller),
-              const SizedBox(height: 18),
-              _ImpactMetricsGrid(controller: controller),
-              const SizedBox(height: 18),
-              _AIDecisionLog(),
-            ],
-          ),
+        Text(label.toUpperCase(), style: TextStyle(fontSize: 10, letterSpacing: 1, color: Colors.white.withOpacity(0.4), fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
       ],
     );
   }
 }
 
-class _StandbyView extends StatelessWidget {
+class _ETADisplay extends StatelessWidget {
+  final int before;
+  final int after;
+  const _ETADisplay({required this.before, required this.after});
+
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Icon(Icons.security, color: Color(0xFF18F2FF), size: 80),
-          const SizedBox(height: 16),
-          const Text(
-            'SYSTEM STANDBY',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Ready to establish Green Corridors. High-priority vehicle detection active.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white60),
-          ),
-          const SizedBox(height: 32),
-          FilledButton(
-            onPressed: () =>
-                context.read<TrafficController>().activateEmergencyMode(),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: const Text(
-              'MANUAL EMERGENCY TRIGGER',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Column(
+          children: [
+            Text('$before min', style: TextStyle(fontSize: 24, decoration: TextDecoration.lineThrough, color: Colors.white.withOpacity(0.2))),
+            const Text('Original', style: TextStyle(fontSize: 10, color: Colors.white24)),
+          ],
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24),
+          child: Icon(Icons.arrow_forward_rounded, color: Color(0xFF8CFF5A), size: 32),
+        ),
+        Column(
+          children: [
+            Text('$after min', style: const TextStyle(fontSize: 56, fontWeight: FontWeight.w900, color: Color(0xFF8CFF5A))),
+            const Text('Optimized ETA', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF8CFF5A))),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _MiniMetric extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  const _MiniMetric({required this.label, required this.value, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.white38, size: 18),
+        const SizedBox(height: 8),
+        Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+        Text(label, style: TextStyle(fontSize: 9, color: Colors.white.withOpacity(0.3), fontWeight: FontWeight.bold)),
+      ],
     );
   }
 }
@@ -103,484 +302,34 @@ class _ActivationFlowView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
+    return Padding(
+      padding: const EdgeInsets.all(40),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const _BrainAnimation(),
+          const CircularProgressIndicator(color: Color(0xFF18F2FF)),
           const SizedBox(height: 40),
           const Text(
-            'ESTABLISHING GREEN CORRIDOR',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 2,
-              color: Color(0xFF8CFF5A),
-            ),
+            'SYNCHRONIZING CITY',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 4, color: Color(0xFF18F2FF)),
           ),
-          const SizedBox(height: 40),
-          _FlowStep(
-            label: 'Emergency Detected',
-            isActive: stage.index >= EmergencyActivationStage.detecting.index,
-            isCompleted: stage.index > EmergencyActivationStage.detecting.index,
-          ),
-          _FlowStep(
-            label: 'AI Route Analysis',
-            isActive: stage.index >= EmergencyActivationStage.analyzing.index,
-            isCompleted: stage.index > EmergencyActivationStage.analyzing.index,
-          ),
-          _FlowStep(
-            label: 'Path Optimization',
-            isActive: stage.index >= EmergencyActivationStage.optimizing.index,
-            isCompleted:
-                stage.index > EmergencyActivationStage.optimizing.index,
-          ),
-          _FlowStep(
-            label: 'Signal Synchronization',
-            isActive:
-                stage.index >= EmergencyActivationStage.synchronizing.index,
-            isCompleted:
-                stage.index > EmergencyActivationStage.synchronizing.index,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BrainAnimation extends StatefulWidget {
-  const _BrainAnimation();
-
-  @override
-  State<_BrainAnimation> createState() => _BrainAnimationState();
-}
-
-class _BrainAnimationState extends State<_BrainAnimation>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [
-                const Color(
-                  0xFF18F2FF,
-                ).withOpacity(0.5 * (1 - _controller.value)),
-                Colors.transparent,
-              ],
-            ),
-          ),
-          child: const Icon(
-            Icons.psychology,
-            size: 60,
-            color: Color(0xFF18F2FF),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _FlowStep extends StatelessWidget {
-  final String label;
-  final bool isActive;
-  final bool isCompleted;
-
-  const _FlowStep({
-    required this.label,
-    required this.isActive,
-    required this.isCompleted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Icon(
-            isCompleted ? Icons.check_circle : Icons.circle_outlined,
-            color: isCompleted
-                ? const Color(0xFF8CFF5A)
-                : (isActive ? Colors.white : Colors.white10),
-          ),
-          const SizedBox(width: 16),
+          const SizedBox(height: 12),
           Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              color: isActive ? Colors.white : Colors.white10,
-            ),
+            _getStageText(),
+            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
           ),
         ],
       ),
     );
   }
-}
 
-class _GreenCorridorHero extends StatelessWidget {
-  final TrafficController controller;
-  const _GreenCorridorHero({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B191F),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF8CFF5A).withOpacity(0.5),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF8CFF5A).withOpacity(0.2),
-            blurRadius: 20,
-            spreadRadius: 5,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '🚑 GREEN CORRIDOR ACTIVE',
-                    style: TextStyle(
-                      color: Color(0xFF8CFF5A),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                  Text(
-                    'VEHICLE: A-204',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              IconButton(
-                onPressed: () => controller.deactivateEmergencyMode(),
-                icon: const Icon(Icons.cancel, color: Colors.white24),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Progress Visualization
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: 140,
-                height: 140,
-                child: CircularProgressIndicator(
-                  value: 0.65,
-                  strokeWidth: 10,
-                  backgroundColor: Colors.white10,
-                  color: const Color(0xFF8CFF5A),
-                ),
-              ),
-              Column(
-                children: [
-                  const Text(
-                    'ETA',
-                    style: TextStyle(fontSize: 12, color: Colors.white38),
-                  ),
-                  Text(
-                    '${controller.emergency.etaSeconds ~/ 60}m',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF8CFF5A),
-                    ),
-                  ),
-                  const Text(
-                    'REMAINING',
-                    style: TextStyle(fontSize: 10, color: Colors.white38),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 32),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _StatusItem(label: 'DESTINATION', value: 'City Hospital'),
-              _StatusItem(label: 'PRIORITY', value: 'Level 1 (Critical)'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatusItem extends StatelessWidget {
-  final String label;
-  final String value;
-  const _StatusItem({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 10,
-            color: Colors.white38,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ImpactMetricsGrid extends StatelessWidget {
-  final TrafficController controller;
-  const _ImpactMetricsGrid({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.5,
-      children: [
-        _MetricCard(
-          label: 'ETA BEFORE',
-          value: '8 Minutes',
-          icon: Icons.timer_outlined,
-          color: Colors.white54,
-        ),
-        _MetricCard(
-          label: 'ETA AFTER',
-          value: '4 Minutes',
-          icon: Icons.bolt,
-          color: const Color(0xFF8CFF5A),
-        ),
-        _MetricCard(
-          label: 'TIME SAVED',
-          value: '4 Minutes',
-          icon: Icons.history,
-          color: const Color(0xFF8CFF5A),
-        ),
-        _MetricCard(
-          label: 'FLOW OPTIMIZED',
-          value: '94%',
-          icon: Icons.waves,
-          color: const Color(0xFF18F2FF),
-        ),
-      ],
-    );
-  }
-}
-
-class _MetricCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _MetricCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassCard(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 14, color: color),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white38,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AIDecisionLog extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return GlassCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.terminal, color: Color(0xFF18F2FF), size: 20),
-              SizedBox(width: 8),
-              Text(
-                'AI LIVE DECISION LOG',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _LogItem(time: '10:20 PM', event: 'AI detected congestion patterns'),
-          _LogItem(
-            time: '10:21 PM',
-            event: 'Signal optimized for smooth transition',
-          ),
-          _LogItem(
-            time: '10:22 PM',
-            event: 'Emergency vehicle detected at SIG-04',
-          ),
-          _LogItem(
-            time: '10:22 PM',
-            event: 'Green Corridor activated city-wide',
-          ),
-          _LogItem(
-            time: '10:23 PM',
-            event: 'ETA reduced by 4 minutes',
-            isLast: true,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LogItem extends StatelessWidget {
-  final String time;
-  final String event;
-  final bool isLast;
-
-  const _LogItem({
-    required this.time,
-    required this.event,
-    this.isLast = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Row(
-        children: [
-          Column(
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF18F2FF),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              if (!isLast)
-                Expanded(child: Container(width: 1, color: Colors.white10)),
-            ],
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      time,
-                      style: const TextStyle(
-                        fontSize: 9,
-                        color: Colors.white24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        event,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  String _getStageText() {
+    switch (stage) {
+      case EmergencyActivationStage.detecting: return 'Locating nearest emergency unit...';
+      case EmergencyActivationStage.analyzing: return 'Calculating optimal path...';
+      case EmergencyActivationStage.optimizing: return 'Clearing congestion points...';
+      case EmergencyActivationStage.synchronizing: return 'Locking signal sequence...';
+      default: return 'Establishing Green Corridor...';
+    }
   }
 }

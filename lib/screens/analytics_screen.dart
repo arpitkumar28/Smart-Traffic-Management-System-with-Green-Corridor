@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/traffic_controller.dart';
-import '../widgets/glass_card.dart';
 
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
@@ -14,193 +13,339 @@ class AnalyticsScreen extends StatelessWidget {
     final response = controller.analytics['response_time'] as int? ?? 38;
     final co2 = controller.analytics['co2_reduction'] as int? ?? 18;
 
-    return ListView(
-      padding: const EdgeInsets.all(18),
-      children: [
-        const Text('INTELLIGENCE UNIT', style: TextStyle(fontSize: 10, color: Color(0xFF18F2FF), fontWeight: FontWeight.bold, letterSpacing: 2)),
-        const Text('Analytics & Impact', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900)),
-        const SizedBox(height: 24),
-        
-        Row(
-          children: [
-            Expanded(child: _ImpactMetric(label: 'CITY EFFICIENCY', value: '$efficiency%', color: const Color(0xFF18F2FF))),
-            const SizedBox(width: 12),
-            Expanded(child: _ImpactMetric(label: 'RESPONSE GAIN', value: '$response%', color: const Color(0xFF8CFF5A))),
-          ],
+    return CustomScrollView(
+      slivers: [
+        // Header
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Analytics & Insights',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                Text(
+                  '24-Hour System Performance Report',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withOpacity(0.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _ImpactMetric(label: 'CO2 REDUCTION', value: '$co2%', color: Colors.greenAccent)),
-            const SizedBox(width: 12),
-            Expanded(child: _ImpactMetric(label: 'JAMS PREVENTED', value: '${controller.analytics['trafficJamsPrevented'] ?? 32}', color: Colors.orangeAccent)),
-          ],
+
+        // Hero Performance Section
+        SliverPadding(
+          padding: const EdgeInsets.all(24),
+          sliver: SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF18F2FF).withOpacity(0.05),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: const Color(0xFF18F2FF).withOpacity(0.1),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'CITY EFFICIENCY SCORE',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                          color: Color(0xFF18F2FF),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF8CFF5A).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          '↑ 4.2%',
+                          style: TextStyle(
+                            color: Color(0xFF8CFF5A),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '$efficiency%',
+                    style: const TextStyle(
+                      fontSize: 64,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const SizedBox(
+                    height: 100,
+                    width: double.infinity,
+                    child: _CustomSparkline(color: Color(0xFF18F2FF)),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-        const SizedBox(height: 24),
-        
-        GlassCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+
+        // Metrics Grid
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          sliver: SliverGrid.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.4,
             children: [
-              const Row(
-                children: [
-                  Icon(Icons.timeline, color: Color(0xFF18F2FF), size: 18),
-                  SizedBox(width: 8),
-                  Text('NETWORK LOAD (24H)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                ],
+              _ModernMetric(
+                label: 'Response Gain',
+                value: '+$response%',
+                icon: Icons.bolt,
+                color: const Color(0xFF8CFF5A),
               ),
-              const SizedBox(height: 24),
-              const SizedBox(
-                height: 180,
-                width: double.infinity,
-                child: _CustomSparkline(),
+              _ModernMetric(
+                label: 'CO2 Reduction',
+                value: '$co2%',
+                icon: Icons.eco,
+                color: Colors.greenAccent,
               ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _Legend(color: Color(0xFF18F2FF), label: 'Predicted'),
-                  const SizedBox(width: 16),
-                  _Legend(color: Color(0xFF8CFF5A), label: 'Actual'),
-                ],
+              _ModernMetric(
+                label: 'Jams Prevented',
+                value: '${controller.analytics['trafficJamsPrevented'] ?? 32}',
+                icon: Icons.traffic,
+                color: Colors.orangeAccent,
+              ),
+              _ModernMetric(
+                label: 'Hours Saved',
+                value: '${controller.analytics['hoursSaved'] ?? 42}h',
+                icon: Icons.timer,
+                color: Colors.blueAccent,
               ),
             ],
           ),
         ),
-        
-        const SizedBox(height: 24),
-        const _WireIntegrationCard(),
-        const SizedBox(height: 32),
+
+        // Intelligence Sources
+        SliverPadding(
+          padding: const EdgeInsets.all(24),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Connected Data Sources',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _SourceTile(
+                  label: 'Anakin Wire Intelligence',
+                  status: 'Optimal',
+                  icon: Icons.bolt,
+                ),
+                _SourceTile(
+                  label: 'City CCTV Network',
+                  status: 'Live',
+                  icon: Icons.camera_outdoor,
+                ),
+                _SourceTile(
+                  label: 'Emergency Dispatch (911)',
+                  status: 'Active',
+                  icon: Icons.emergency,
+                ),
+                _SourceTile(
+                  label: 'Weather AI Station',
+                  status: 'Connected',
+                  icon: Icons.wb_sunny,
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SliverToBoxAdapter(child: SizedBox(height: 40)),
       ],
     );
   }
 }
 
-class _ImpactMetric extends StatelessWidget {
-  const _ImpactMetric({required this.label, required this.value, required this.color});
-
+class _ModernMetric extends StatelessWidget {
   final String label;
   final String value;
+  final IconData icon;
   final Color color;
+
+  const _ModernMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color)),
-        ],
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
-    );
-  }
-}
-
-class _Legend extends StatelessWidget {
-  final Color color;
-  final String label;
-  const _Legend({required this.color, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(width: 8, height: 2, color: color),
-        const SizedBox(width: 6),
-        Text(label, style: const TextStyle(fontSize: 10, color: Colors.white38)),
-      ],
-    );
-  }
-}
-
-class _CustomSparkline extends StatelessWidget {
-  const _CustomSparkline();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _SparklinePainter(),
-    );
-  }
-}
-
-class _SparklinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint1 = Paint()
-      ..color = const Color(0xFF18F2FF)
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final paint2 = Paint()
-      ..color = const Color(0xFF8CFF5A)
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path1 = Path()
-      ..moveTo(0, size.height * 0.7)
-      ..lineTo(size.width * 0.2, size.height * 0.4)
-      ..lineTo(size.width * 0.4, size.height * 0.8)
-      ..lineTo(size.width * 0.6, size.height * 0.3)
-      ..lineTo(size.width * 0.8, size.height * 0.5)
-      ..lineTo(size.width, size.height * 0.2);
-
-    final path2 = Path()
-      ..moveTo(0, size.height * 0.8)
-      ..lineTo(size.width * 0.2, size.height * 0.6)
-      ..lineTo(size.width * 0.4, size.height * 0.7)
-      ..lineTo(size.width * 0.6, size.height * 0.4)
-      ..lineTo(size.width * 0.8, size.height * 0.6)
-      ..lineTo(size.width, size.height * 0.4);
-
-    canvas.drawPath(path1, paint1);
-    canvas.drawPath(path2, paint2);
-
-    // Grid lines
-    final gridPaint = Paint()..color = Colors.white10..strokeWidth = 1;
-    for (int i = 1; i < 4; i++) {
-      double y = size.height * (i / 4);
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _WireIntegrationCard extends StatelessWidget {
-  const _WireIntegrationCard();
-
-  @override
-  Widget build(BuildContext context) {
-    const sources = ['Traffic Reports', 'Emergency Feeds', 'Weather Data', 'Road Conditions', 'Public Alerts'];
-    return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('INTELLIGENCE SOURCES', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
-          const SizedBox(height: 4),
-          const Text('Powered by Wire Connected Intelligence', style: TextStyle(color: Color(0xFF18F2FF), fontWeight: FontWeight.bold, fontSize: 10)),
-          const SizedBox(height: 20),
-          ...sources.map(
-            (source) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle, color: Color(0xFF8CFF5A), size: 16),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(source, style: const TextStyle(fontSize: 13, color: Colors.white70))),
-                ],
-              ),
+          Icon(icon, color: color, size: 20),
+          const Spacer(),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.white.withOpacity(0.4),
+              letterSpacing: 0.5,
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class _SourceTile extends StatelessWidget {
+  final String label;
+  final String status;
+  final IconData icon;
+
+  const _SourceTile({
+    required this.label,
+    required this.status,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white24, size: 20),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Text(
+            status,
+            style: const TextStyle(
+              color: Color(0xFF8CFF5A),
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomSparkline extends StatelessWidget {
+  final Color color;
+  const _CustomSparkline({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(painter: _SparklinePainter(color: color));
+  }
+}
+
+class _SparklinePainter extends CustomPainter {
+  final Color color;
+  _SparklinePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path()
+      ..moveTo(0, size.height * 0.7)
+      ..lineTo(size.width * 0.1, size.height * 0.6)
+      ..lineTo(size.width * 0.2, size.height * 0.8)
+      ..lineTo(size.width * 0.3, size.height * 0.4)
+      ..lineTo(size.width * 0.4, size.height * 0.5)
+      ..lineTo(size.width * 0.5, size.height * 0.2)
+      ..lineTo(size.width * 0.6, size.height * 0.3)
+      ..lineTo(size.width * 0.7, size.height * 0.1)
+      ..lineTo(size.width * 0.8, size.height * 0.4)
+      ..lineTo(size.width * 0.9, size.height * 0.2)
+      ..lineTo(size.width, size.height * 0.3);
+
+    // Gradient below path
+    final fillPath = Path.from(path)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [color.withOpacity(0.2), Colors.transparent],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    canvas.drawPath(fillPath, fillPaint);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -79,10 +79,16 @@ class ApiService {
     final wsUrl = baseUrl
         .replaceFirst('http://', 'ws://')
         .replaceFirst('https://', 'wss://');
-    final channel = WebSocketChannel.connect(Uri.parse('$wsUrl/ws'));
-    return channel.stream.map(
-      (message) => jsonDecode(message as String) as Map<String, dynamic>,
-    );
+    try {
+      final channel = WebSocketChannel.connect(Uri.parse('$wsUrl/ws'));
+      return channel.stream
+          .map(
+            (message) => jsonDecode(message as String) as Map<String, dynamic>,
+          )
+          .handleError((_) {});
+    } catch (_) {
+      return const Stream.empty();
+    }
   }
 
   Map<String, dynamic> demoDashboard() => {

@@ -41,8 +41,8 @@ class TrafficController extends ChangeNotifier {
 
   EmergencyEvent emergency = const EmergencyEvent(
     vehicleId: 'A-204',
-    destination: 'City Hospital',
-    route: ['SIG-04', 'SIG-01', 'SIG-02', 'SIG-03'],
+    destination: 'City General Hospital',
+    route: ['Tech Park', 'Civic Center', 'Metro Junction', 'Hospital Road'],
     etaSeconds: 240,
     timeSavedSeconds: 240,
     active: true,
@@ -54,8 +54,8 @@ class TrafficController extends ChangeNotifier {
   List<WireIntelligence> wireIntelligence = [];
 
   String aiPrediction =
-      'Heavy congestion expected near Civic Center within 18 minutes.';
-  String aiAction = 'Extend green time by 12 seconds';
+      'Heavy congestion likely near Civic Center within 18 minutes.';
+  String aiAction = 'Extend green signal by 12 seconds';
 
   void startDemo() {
     _seedDemoData();
@@ -86,7 +86,7 @@ class TrafficController extends ChangeNotifier {
 
       signals = signals.map((signal) {
         final nextLoad = (signal.load + _random.nextInt(17) - 8).clamp(12, 98);
-        final mode = emergencyActive && emergency.route.contains(signal.id)
+        final mode = emergencyActive && emergency.route.contains(signal.name)
             ? SignalMode.priority
             : _modeForLoad(nextLoad);
         return TrafficSignal(
@@ -221,14 +221,14 @@ class TrafficController extends ChangeNotifier {
           payload['vehicleId'] as String? ??
           payload['ambulance'] as String? ??
           'A-204',
-      destination: payload['destination'] as String? ?? 'City Hospital',
-      route: const ['SIG-04', 'SIG-01', 'SIG-02', 'SIG-03'],
+      destination: payload['destination'] as String? ?? 'City General Hospital',
+      route: const ['Tech Park', 'Civic Center', 'Metro Junction', 'Hospital Road'],
       etaSeconds: etaAfterMinutes * 60,
       timeSavedSeconds: (payload['timeSaved'] as int? ?? 4) * 60,
       active: true,
     );
     signals = signals.map((signal) {
-      final isRouteSignal = emergency.route.contains(signal.id);
+      final isRouteSignal = emergency.route.contains(signal.name);
       return TrafficSignal(
         id: signal.id,
         name: signal.name,
@@ -253,6 +253,11 @@ class TrafficController extends ChangeNotifier {
     _prependEvent('Now', 'Green Corridor activated', 'green_corridor');
     _prependEvent(
       'Now',
+      'Ambulance entered corridor',
+      'emergency',
+    );
+    _prependEvent(
+      'Now',
       'ETA reduced by ${etaBeforeMinutes - etaAfterMinutes} minutes',
       'analytics',
     );
@@ -267,19 +272,28 @@ class TrafficController extends ChangeNotifier {
     _applyEvents(apiService.demoEvents());
     _applyPrediction(apiService.demoPrediction());
     
+    // Override signal names with real city names
+    final cityNames = ['Civic Center', 'Hospital Road', 'Metro Junction', 'Tech Park', 'Bridge Way', 'South Park'];
+    signals = List.generate(cityNames.length, (i) => TrafficSignal(
+      id: 'SIG-0${i+1}',
+      name: cityNames[i],
+      load: 30 + _random.nextInt(40),
+      mode: SignalMode.green,
+    ));
+
     wireIntelligence = [
       const WireIntelligence(
         source: 'Anakin Wire',
         timestamp: '2m ago',
         riskLevel: 'High',
-        message: 'Extreme congestion detected at North Crossing',
+        message: 'Extreme congestion detected at Metro Junction',
         type: 'traffic',
       ),
       const WireIntelligence(
         source: 'Weather AI',
         timestamp: '5m ago',
         riskLevel: 'Moderate',
-        message: 'Heavy rain expected within 15 minutes',
+        message: 'Heavy rain expected near Civic Center',
         type: 'weather',
       ),
     ];
@@ -297,11 +311,13 @@ class TrafficController extends ChangeNotifier {
   }
 
   void _applySignals(List<dynamic> rows) {
-    signals = rows.map((row) {
-      final map = row as Map<String, dynamic>;
+    final cityNames = ['Civic Center', 'Hospital Road', 'Metro Junction', 'Tech Park', 'Bridge Way', 'South Park'];
+    signals = rows.asMap().entries.map((entry) {
+      final index = entry.key;
+      final map = entry.value as Map<String, dynamic>;
       return TrafficSignal(
         id: map['id'] as String,
-        name: map['name'] as String,
+        name: index < cityNames.length ? cityNames[index] : map['name'] as String,
         load: map['traffic_load'] as int,
         mode: _signalMode(map['status'] as String),
       );
@@ -344,8 +360,8 @@ class TrafficController extends ChangeNotifier {
   void _applyPrediction(Map<String, dynamic> payload) {
     prediction = payload;
     aiPrediction =
-        '${payload['risk'] ?? 'High'} risk in ${payload['zone'] ?? 'Civic Center'}';
-    aiAction = payload['recommendedAction'] as String? ?? aiAction;
+        'Heavy congestion likely near ${payload['zone'] ?? 'Civic Center'} within 18 minutes.';
+    aiAction = payload['recommendedAction'] as String? ?? 'Extend green signal by 12 seconds';
     aiConfidence = payload['confidence'] as int? ?? aiConfidence;
   }
 
