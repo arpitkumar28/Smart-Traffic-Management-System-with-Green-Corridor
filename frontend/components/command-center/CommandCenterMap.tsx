@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { mapSensors, greenCorridorRoute } from "../../lib/commandCenterData";
+import { HeatLayerFallback } from "./HeatLayerFallback";
 
 interface MapProps {
   isEmergency?: boolean;
@@ -10,7 +11,6 @@ interface MapProps {
 export function CommandCenterMap({ isEmergency }: MapProps) {
   const [reactLeaflet, setReactLeaflet] = useState<any>(null);
   const [L, setL] = useState<any>(null);
-  const [vehicleIndex, setVehicleIndex] = useState(0);
   const [vehiclePosition, setVehiclePosition] = useState<[number, number] | null>(null);
   const [mapInstance, setMapInstance] = useState<any>(null);
 
@@ -25,69 +25,6 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
       setL(Leaflet.default || Leaflet);
     }).catch((error) => console.error("Failed to load map libraries:", error));
   }, []);
-
-  if (!reactLeaflet || !L) {
-    return (
-      <div className="h-full w-full flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-           <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-           <span className="text-[10px] font-black tracking-[0.3em] text-primary uppercase">Initializing Global Grid</span>
-        </div>
-      </div>
-    );
-  }
-
-  const { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip, ZoomControl, Marker } = reactLeaflet;
-
-  // HeatLayerFallback component: dynamically loads leaflet.heat if available
-  function HeatLayerFallback({ map, L }: { map: any; L: any }) {
-    useEffect(() => {
-      if (!map || !L) return;
-      let heatLayer: any = null;
-      let cancelled = false;
-
-      // Load leaflet.heat at runtime via CDN if not already present
-      (async () => {
-        try {
-          const points = mapSensors.map((s) => [s.position[0], s.position[1], s.status === 'priority' ? 1.0 : s.status === 'red' ? 0.9 : 0.45]);
-          const opts = { radius: 28, blur: 24, max: 1 };
-
-          const createHeat = () => {
-            if ((L as any).heatLayer) {
-              heatLayer = (L as any).heatLayer(points, opts).addTo(map);
-            }
-          };
-
-          if ((L as any).heatLayer) {
-            createHeat();
-          } else {
-            const src = 'https://unpkg.com/leaflet.heat/dist/leaflet-heat.js';
-            const existing = document.querySelector(`script[src="${src}"]`);
-            if (!existing) {
-              const s = document.createElement('script');
-              s.src = src;
-              s.async = true;
-              s.onload = () => createHeat();
-              s.onerror = () => console.warn('Failed to load leaflet.heat from CDN');
-              document.head.appendChild(s);
-            } else {
-              // if script already present, attempt to create heat layer
-              createHeat();
-            }
-          }
-        } catch (e) {
-          console.warn('leaflet.heat could not be initialized', e);
-        }
-      })();
-
-      return () => {
-        if (heatLayer && map && map.removeLayer) map.removeLayer(heatLayer);
-        cancelled = true;
-      };
-    }, [map, L]);
-
-    return null;
-  }
 
   // smooth animate a vehicle along the route using requestAnimationFrame
   useEffect(() => {
@@ -120,6 +57,19 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, [isEmergency]);
+
+  if (!reactLeaflet || !L) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+           <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+           <span className="text-[10px] font-black tracking-[0.3em] text-primary uppercase">Initializing Global Grid</span>
+        </div>
+      </div>
+    );
+  }
+
+  const { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip, ZoomControl, Marker } = reactLeaflet;
 
   return (
     <div className="h-full w-full relative">
