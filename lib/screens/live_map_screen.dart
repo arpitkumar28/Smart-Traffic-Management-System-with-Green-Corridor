@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
+import '../models/traffic_models.dart';
 import '../state/traffic_controller.dart';
 
 class LiveMapScreen extends StatefulWidget {
@@ -412,7 +413,12 @@ class _AiMetric extends StatelessWidget {
         children: [
           Text(label.toUpperCase(), style: TextStyle(color: Colors.white30, fontSize: 8, fontWeight: FontWeight.bold)),
           const SizedBox(height: 2),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold), truncate: true),
+          Text(
+            value,
+            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
         ],
       ),
     );
@@ -452,7 +458,7 @@ class _EmergencyNotification extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.siren, color: Colors.white, size: 32),
+                  const Icon(Icons.emergency, color: Colors.white, size: 32),
                   const SizedBox(width: 12),
                   const Text(
                     'EMERGENCY ROUTE ACTIVE',
@@ -730,7 +736,12 @@ class _CorridorDetail extends StatelessWidget {
       children: [
         Text(label.toUpperCase(), style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 8, fontWeight: FontWeight.w900)),
         const SizedBox(height: 2),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600), truncate: true),
+        Text(
+          value,
+          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
       ],
     );
   }
