@@ -13,18 +13,16 @@ import {
   RadioTower, 
   CloudRain, 
   Layers, 
-  Navigation, 
   Zap, 
   ShieldCheck,
   Ambulance,
-  Clock,
-  Wind
+  Clock
 } from "lucide-react";
-import { Card } from "@/components/ui";
-import { CommandCenterMap } from "@/components/command-center/CommandCenterMap";
+
+import { Card, cn } from "../../components/ui";
+import { CommandCenterMap } from "../../components/command-center/CommandCenterMap";
 import { 
   fetchDashboardMetrics, 
-  fetchSignals, 
   fetchAlerts, 
   fetchEvents, 
   triggerEmergencyCorridor,
@@ -32,9 +30,17 @@ import {
   type DashboardMetrics, 
   type Alert, 
   type TrafficEvent 
-} from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+} from "../../lib/api";
+
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
+} from "recharts";
 
 const analyticsData = [
   { time: "00:00", value: 45 },

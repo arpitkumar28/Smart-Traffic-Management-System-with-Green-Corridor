@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { mapSensors, greenCorridorRoute } from "@/lib/commandCenterData";
-import { motion } from "framer-motion";
+import { mapSensors, greenCorridorRoute } from "../../lib/commandCenterData";
 
 interface MapProps {
   isEmergency?: boolean;
@@ -37,8 +36,6 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
 
   const { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip, ZoomControl } = reactLeaflet;
 
-  // Custom marker icon logic for Leaflet if needed, but CircleMarkers are better for "Command Center" look
-  
   return (
     <div className="h-full w-full relative">
       <MapContainer
@@ -52,7 +49,6 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
 
-        {/* Heatmap / Congestion Zones - Simulating with semi-transparent circles */}
         <CircleMarker 
            center={[37.785, -122.405]} 
            radius={60} 
@@ -64,7 +60,6 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
            pathOptions={{ fillColor: '#FFC857', fillOpacity: 0.1, stroke: false }} 
         />
 
-        {/* Emergency Route */}
         {isEmergency && (
           <Polyline
             positions={greenCorridorRoute}
@@ -78,8 +73,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
           />
         )}
 
-        {/* Traffic Signals */}
-        {mapSensors.map((sensor) => {
+        {mapSensors.map((sensor: any) => {
           const color = sensor.status === "priority" ? "#00FF88" : sensor.status === "red" ? "#FF5252" : "#FFC857";
           const isActive = isEmergency && sensor.status === "priority";
           
@@ -96,7 +90,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
               }}
               radius={isActive ? 12 : 8}
             >
-              <Tooltip direction="top" offset={[0, -10]} opacity={0.9} className="custom-tooltip">
+              <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
                 <div className="bg-card border border-border p-2 rounded text-[10px] font-bold uppercase tracking-wider">
                   <div className="text-text-primary mb-1">{sensor.label}</div>
                   <div className="flex items-center gap-2">
@@ -109,14 +103,13 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
           );
         })}
 
-        {/* Emergency Vehicle Marker */}
         {isEmergency && (
            <CircleMarker
              center={greenCorridorRoute[0]}
              pathOptions={{ color: '#00FF88', fillColor: '#00FF88', fillOpacity: 1, weight: 2 }}
              radius={10}
            >
-              <Tooltip permanent direction="right" offset={[15, 0]} className="vehicle-tooltip">
+              <Tooltip permanent direction="right" offset={[15, 0]}>
                  <div className="bg-danger px-2 py-1 rounded text-[8px] font-black text-white uppercase tracking-tighter">
                     AMB-UNIT-7
                  </div>
@@ -127,7 +120,6 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
         <ZoomControl position="bottomright" />
       </MapContainer>
 
-      {/* Map Overlay HUD elements */}
       <div className="absolute top-4 right-4 z-[1000] pointer-events-none">
          <div className="bg-secondary-background/80 backdrop-blur-md border border-border p-3 rounded flex flex-col gap-2">
             <div className="flex items-center justify-between gap-8">
