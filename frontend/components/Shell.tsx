@@ -22,41 +22,37 @@ export function Shell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background text-text-primary font-inter flex flex-col">
       {/* TOP STATUS BAR */}
-      <header className="h-14 border-b border-border bg-secondary-background/80 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-50">
+      <header className="min-h-[3.5rem] h-auto py-2 border-b border-border bg-secondary-background/80 backdrop-blur-md flex flex-wrap items-center justify-between px-6 sticky top-0 z-50 gap-4">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2 mr-4">
               <ShieldCheck className="text-primary" size={24} />
               <span className="font-black tracking-tighter text-xl">GREENFLOW AI</span>
             </Link>
-            
-            <div className="hidden md:flex items-center gap-6 text-[10px] font-black tracking-widest text-text-secondary uppercase">
-              <div className="flex items-center gap-2 text-success">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                SYSTEM ONLINE
-              </div>
-              <div className="flex items-center gap-2 text-success">
-                <span className="w-2 h-2 rounded-full bg-success" />
-                AI ENGINE ACTIVE
-              </div>
-              <div className="flex items-center gap-2 text-success">
-                <span className="w-2 h-2 rounded-full bg-success" />
-                SIGNAL NETWORK CONNECTED
-              </div>
-              <div className="flex items-center gap-2 text-success">
-                <span className="w-2 h-2 rounded-full bg-success" />
-                EMERGENCY NETWORK READY
-              </div>
-              <div className="flex items-center gap-2 text-success">
-                <span className="w-2 h-2 rounded-full bg-success" />
-                WIRE INTELLIGENCE ACTIVE
-              </div>
-            </div>
           </div>
 
-           <div className="flex items-center gap-4">
-             <div className="h-4 w-[1px] bg-border mx-2" />
-             <div className="text-[10px] font-black tracking-widest text-text-secondary">12:44:02 UTC</div>
-           </div>
+          <div className="flex flex-1 items-center justify-end flex-wrap gap-3 text-[9px] font-black tracking-widest text-text-secondary uppercase">
+            <div className="flex items-center gap-2 text-success bg-success/5 px-2 py-1 rounded-full border border-success/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              SYSTEM ONLINE
+            </div>
+            <div className="flex items-center gap-2 text-success bg-success/5 px-2 py-1 rounded-full border border-success/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+              AI ENGINE ACTIVE
+            </div>
+            <div className="flex items-center gap-2 text-success bg-success/5 px-2 py-1 rounded-full border border-success/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+              SIGNAL NETWORK CONNECTED
+            </div>
+            <div className="flex items-center gap-2 text-success bg-success/5 px-2 py-1 rounded-full border border-success/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+              EMERGENCY NETWORK READY
+            </div>
+            
+             <div className="flex items-center gap-4 ml-2">
+               <div className="h-4 w-[1px] bg-border" />
+               <div className="text-[10px] font-black tracking-widest text-text-secondary">12:44:02 UTC</div>
+             </div>
+          </div>
         </header>
 
       <div className="flex flex-1 overflow-hidden">

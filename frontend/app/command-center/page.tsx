@@ -16,7 +16,9 @@ import {
   Zap, 
   ShieldCheck,
   Ambulance,
-  Clock
+  Clock,
+  BrainCircuit,
+  Terminal
 } from "lucide-react";
 
 import { Card, cn } from "../../components/ui";
@@ -154,40 +156,55 @@ export default function CommandCenterPage() {
 
   return (
     <div className={cn(
-      "mission-shell flex flex-col gap-6 min-h-screen rounded-lg p-5 transition-all duration-700",
+      "mission-shell flex flex-col gap-6 min-h-screen rounded-lg p-5 transition-all duration-700 bg-[#030712]",
       isEmergency && "emergency-mode-active"
     )}>
       <header className="space-y-4">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div>
             <p className="text-[11px] font-black tracking-[0.45em] text-primary uppercase">Smart City Operations Center</p>
-            <h1 className="mt-2 text-4xl xl:text-6xl font-black tracking-normal text-white neon-text">REAL-TIME TRAFFIC INTELLIGENCE</h1>
-            <p className="mt-3 text-sm text-text-secondary">AI-powered congestion prediction and emergency corridor automation</p>
+            <h1 className="mt-2 text-4xl xl:text-6xl font-black tracking-tighter text-white">GREENFLOW <span className="text-primary italic">AI</span></h1>
+            <p className="mt-3 text-sm text-text-secondary font-medium">AI-powered congestion prediction and emergency corridor automation</p>
           </div>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="flex flex-wrap gap-3 justify-end max-w-2xl">
             <StatusPill label="SYSTEM ONLINE" />
             <StatusPill label="AI ENGINE ACTIVE" />
             <StatusPill label="SIGNAL NETWORK CONNECTED" />
             <StatusPill label="EMERGENCY NETWORK READY" />
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/15 bg-black/20 p-3">
+
+        <div className="flex flex-wrap items-center gap-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-2xl">
           <button
             onClick={() => setDemoMode((value) => !value)}
             className={cn(
-              "rounded-lg border px-4 py-2 text-[10px] font-black uppercase tracking-widest transition",
-              demoMode ? "border-success/40 bg-success/10 text-success shadow-neon-success" : "border-white/10 bg-white/5 text-text-secondary"
+              "premium-btn",
+              demoMode ? "border-success/40 text-success shadow-[0_0_15px_rgba(0,255,157,0.2)]" : "border-white/10 text-text-secondary"
             )}
           >
-            Demo Mode {demoMode ? "On" : "Off"}
+            <div className={cn("w-2 h-2 rounded-full mr-2", demoMode ? "bg-success animate-pulse" : "bg-white/20")} />
+            DEMO MODE {demoMode ? "ACTIVE" : "OFF"}
           </button>
-          <button onClick={simulateCongestion} className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-warning">
-            Simulate Congestion
+          
+          <button onClick={simulateCongestion} className="premium-btn border-warning/30 text-warning hover:bg-warning/5 hover:shadow-[0_0_20px_rgba(255,200,87,0.2)]">
+            <Zap size={14} className="mr-2" />
+            SIMULATE CONGESTION
           </button>
-          <button onClick={toggleEmergency} className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-danger">
-            {isEmergency ? "End Emergency" : "Trigger Ambulance"}
+          
+          <button onClick={toggleEmergency} className={cn(
+            "premium-btn flex-1 md:flex-none justify-center",
+            isEmergency 
+              ? "border-danger text-danger bg-danger/10 shadow-[0_0_25px_rgba(255,77,77,0.3)] animate-pulse" 
+              : "border-primary/40 text-primary hover:bg-primary/5 hover:shadow-[0_0_20px_rgba(0,229,255,0.2)]"
+          )}>
+            <Ambulance size={14} className="mr-2" />
+            {isEmergency ? "ABORT EMERGENCY PROTOCOL" : "TRIGGER EMERGENCY DEMO"}
           </button>
-          <span className="text-[10px] font-semibold text-text-secondary">Judge Mode: predictable live events, visible corridor sync, and instant analytics impact.</span>
+          
+          <div className="hidden lg:flex items-center gap-2 ml-auto px-4 py-2 bg-white/5 rounded-lg border border-white/5">
+             <Terminal size={12} className="text-primary/60" />
+             <span className="text-[10px] font-bold text-text-secondary tracking-tight">JUDGE MODE: INTERACTIVE SCENARIOS ENABLED</span>
+          </div>
         </div>
       </header>
       
@@ -198,9 +215,15 @@ export default function CommandCenterPage() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="warning-bar h-8 w-full flex items-center justify-center overflow-hidden"
+            className="bg-danger/20 border-y border-danger/30 h-10 w-full flex items-center justify-center overflow-hidden"
           >
-            <span className="text-white font-[900] text-sm tracking-[0.5em]">🚨 EMERGENCY MODE ACTIVE 🚨</span>
+            <motion.span 
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1, repeat: Infinity }}
+              className="text-danger font-black text-xs tracking-[0.5em] uppercase"
+            >
+              🚨 PRIORITY EMERGENCY CORRIDOR ENGAGED 🚨
+            </motion.span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -210,121 +233,115 @@ export default function CommandCenterPage() {
         {/* LEFT PANEL - AI & STATUS */}
         <aside className="space-y-6 flex flex-col h-full overflow-y-auto">
           
-          {/* AI INTELLIGENCE */}
+          {/* AI DECISION ENGINE CARD */}
           <section className="space-y-4">
-            <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">AI Command</h3>
-            <motion.div whileHover={{ y: -6 }} transition={{ type: 'spring', stiffness: 220 }}>
-              <Card className="glow-card p-5 space-y-4">
-               <div className="flex items-center justify-between">
-                <span className="text-xs font-[800] text-text-secondary uppercase">AI TRAFFIC HEALTH</span>
-                <span className="text-success font-[900] text-2xl">82%</span>
-               </div>
-               <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }} 
-                  animate={{ width: "82%" }} 
-                  transition={{ duration: 1.2 }}
-                  className="h-full bg-success"
-                />
-               </div>
-               <div className="pt-3 border-t border-border space-y-2">
-                 <div className="flex justify-between items-center text-[10px] font-[600]">
-                   <span className="text-text-secondary uppercase">Predicted Congestion</span>
-                   <span className="text-warning uppercase font-[800]">High</span>
-                 </div>
-                 <div className="flex justify-between items-center text-[10px] font-[600]">
-                   <span className="text-text-secondary uppercase">AI Confidence</span>
-                   <span className="text-primary font-[800]">97%</span>
-                 </div>
-               </div>
+            <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase flex items-center gap-2">
+                <BrainCircuit size={12} className="text-primary" />
+                AI Decision Engine
+            </h3>
+            
+            <motion.div whileHover={{ y: -4 }}>
+              <Card className="glass-card p-5 space-y-4 border-primary/20 bg-primary/5">
+                <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">System Reasoning</span>
+                    <div className="px-2 py-0.5 rounded bg-primary text-black text-[9px] font-black italic">ACTIVE</div>
+                </div>
+                
+                <div className="space-y-3">
+                    <div className="flex gap-3">
+                        <div className="w-1 h-auto bg-primary/30 rounded-full" />
+                        <div className="space-y-1">
+                            <p className="text-[11px] font-bold text-white/90">• Congestion predicted in 18 min</p>
+                            <p className="text-[11px] font-bold text-white/90">• Ambulance ETA optimized</p>
+                            <p className="text-[11px] font-bold text-white/90">• Signal 12 extended by 8 sec</p>
+                            <p className="text-[11px] font-bold text-white/90">• Corridor activated</p>
+                        </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-white/10">
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-[10px] text-text-secondary font-bold">AI CONFIDENCE</span>
+                            <span className="text-primary font-black text-sm">98.2%</span>
+                        </div>
+                        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <motion.div 
+                                initial={{ width: 0 }} 
+                                animate={{ width: "98.2%" }} 
+                                className="h-full bg-primary shadow-[0_0_10px_#00e5ff]"
+                            />
+                        </div>
+                    </div>
+                </div>
               </Card>
             </motion.div>
 
-            <Card className="glow-card p-5 border-warning/30 bg-warning/5">
+            <Card className="glass-card p-5 border-warning/30 bg-warning/5">
                 <div className="flex items-center gap-2 mb-3">
                     <AlertTriangle size={14} className="text-warning" />
                     <span className="text-[10px] font-black tracking-widest text-warning uppercase">AI Recommendation</span>
                 </div>
                 <div className="space-y-3">
-                  <p className="text-sm font-black text-white">Heavy congestion predicted</p>
-                  <div className="grid grid-cols-2 gap-2 text-[10px]">
-                    <div>
-                      <p className="text-text-secondary uppercase">Location</p>
-                      <p className="font-bold text-primary">Metro Junction</p>
-                    </div>
-                    <div>
-                      <p className="text-text-secondary uppercase">Confidence</p>
-                      <p className="font-bold text-success">92%</p>
-                    </div>
-                  </div>
-                  <p className="text-xs font-medium leading-relaxed">
-                    Action: <span className="text-warning font-bold">Extend green cycle +12s</span>
+                  <p className="text-sm font-black text-white">Metro Junction Congestion: 92%</p>
+                  <p className="text-xs font-medium leading-relaxed text-white/70">
+                    Proactive intervention suggested to prevent gridlock at Sector 4 exit.
                   </p>
+                  <button className="w-full py-2 bg-warning/20 border border-warning/30 rounded text-[10px] font-black text-warning uppercase hover:bg-warning/30 transition-all">
+                    EXECUTE OPTIMIZATION
+                  </button>
                 </div>
             </Card>
           </section>
 
           {/* NETWORK STATUS */}
           <section className="space-y-4">
-            <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">Network Status</h3>
+            <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">Network Infrastructure</h3>
             <div className="grid grid-cols-2 gap-3">
                 <StatusSmall label="LATENCY" value="12ms" status="good" />
                 <StatusSmall label="NODES" value="128/128" status="good" />
-                <StatusSmall label="LOAD" value="44%" status="warn" />
+                <StatusSmall label="AI LOAD" value="44%" status="good" />
                 <StatusSmall label="UPTIME" value="99.9%" status="good" />
             </div>
           </section>
 
           {/* EMERGENCY STATUS */}
           <section className="space-y-4 flex-1">
-            <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">Emergency Status</h3>
-            <Card className={cn("glow-card p-5 transition-colors duration-500 bg-card-background", isEmergency ? "border-danger/40" : "") }>
+            <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">Emergency Control</h3>
+            <Card className={cn("glass-card p-5 transition-all duration-500", isEmergency ? "border-danger/50 bg-danger/5 shadow-[0_0_30px_rgba(255,77,77,0.1)]" : "bg-card-background") }>
               <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn("w-14 h-14 rounded-lg flex items-center justify-center border", isEmergency ? "bg-danger/20 border-danger text-danger" : "bg-white/5 border-white/10 text-text-secondary") }>
-                      <Ambulance size={28} />
+                <div className="flex items-center gap-3">
+                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center border", isEmergency ? "bg-danger text-white border-danger" : "bg-white/5 border-white/10 text-text-secondary") }>
+                      <Ambulance size={24} />
                     </div>
                     <div>
-                      <h3 className="font-[900] text-lg uppercase">GREEN CORRIDOR CONTROL</h3>
-                      <p className="text-[11px] text-text-secondary uppercase tracking-wide">Priority routing for emergency vehicles</p>
+                      <h3 className="font-black text-sm uppercase text-white tracking-tight">Green Corridor</h3>
+                      <p className={cn("text-[10px] font-black uppercase tracking-widest", isEmergency ? "text-danger" : "text-success")}>{isEmergency ? "ACTIVE INTERVENTION" : "SYSTEM STANDBY"}</p>
                     </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-2 bg-white/5 rounded border border-white/5 text-center">
+                    <div className="text-[8px] text-text-secondary uppercase font-black">Route</div>
+                    <div className="font-black text-xs text-white mt-0.5">{routeLengthDisplay}</div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-[12px] text-text-secondary">Status</div>
-                    <div className={cn("mt-1 font-[800] uppercase", isEmergency ? "text-danger" : "text-success")}>{isEmergency ? "EMERGENCY ACTIVE" : "STANDBY"}</div>
+                  <div className="p-2 bg-white/5 rounded border border-white/5 text-center">
+                    <div className="text-[8px] text-text-secondary uppercase font-black">Sync</div>
+                    <div className="font-black text-xs text-white mt-0.5">{signalsSyncedDisplay}</div>
+                  </div>
+                  <div className="p-2 bg-white/5 rounded border border-white/5 text-center">
+                    <div className="text-[8px] text-text-secondary uppercase font-black">Saved</div>
+                    <div className="font-black text-xs text-success mt-0.5">{timeSavedDisplay}</div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="p-3 bg-secondary-background/60 rounded border border-border text-center">
-                    <div className="text-[10px] text-text-secondary uppercase">Route Length</div>
-                    <div className="font-[900] text-lg neon-text">{routeLengthDisplay}</div>
-                  </div>
-                  <div className="p-3 bg-secondary-background/60 rounded border border-border text-center">
-                    <div className="text-[10px] text-text-secondary uppercase">Signals Synced</div>
-                    <div className="font-[900] text-lg neon-text">{signalsSyncedDisplay}</div>
-                  </div>
-                  <div className="p-3 bg-secondary-background/60 rounded border border-border text-center">
-                    <div className="text-[10px] text-text-secondary uppercase">Time Saved</div>
-                    <div className="font-[900] text-lg neon-text">{timeSavedDisplay}</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <motion.button
+                <button
                     onClick={toggleEmergency}
-                    whileTap={{ scale: 0.98 }}
                     className={cn(
-                      "flex-1 py-3 rounded-lg font-[900] text-sm tracking-widest transition-all",
-                      isEmergency ? "bg-danger text-white shadow-neon" : "bg-primary text-background"
+                      "w-full py-3 rounded-lg font-black text-[10px] tracking-[0.2em] transition-all border uppercase",
+                      isEmergency ? "bg-danger text-white border-danger shadow-[0_0_20px_rgba(255,77,77,0.4)]" : "bg-white/5 text-white border-white/10 hover:border-primary/50"
                     )}
-                  >
-                    {isEmergency ? "DEACTIVATE GREEN CORRIDOR" : "🚑 ACTIVATE GREEN CORRIDOR"}
-                  </motion.button>
-
-                  <button className="px-4 py-3 rounded-lg bg-secondary-background/50 border border-border text-[12px] font-[600]">VIEW ROUTE</button>
-                </div>
+                >
+                    {isEmergency ? "TERMINATE CORRIDOR" : "MANUAL TRIGGER"}
+                </button>
               </div>
             </Card>
           </section>
@@ -332,45 +349,43 @@ export default function CommandCenterPage() {
 
         {/* CENTER PANEL - LIVE MAP */}
         <section className="flex flex-col gap-6 h-full">
-           <div>
-             <h2 className="text-[10px] font-black tracking-[0.35em] text-primary uppercase">City Operations Command Center</h2>
-             <p className="mt-1 text-xs text-text-secondary">AI Traffic Intelligence • Emergency Routing • Green Corridor Control</p>
-           </div>
-           <Card className="flex-1 glow-card relative overflow-hidden bg-black/40 min-h-[560px]">
-              <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-                 <div className="bg-secondary-background/80 backdrop-blur-md px-4 py-2 border border-border rounded flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                    <span className="text-[10px] font-black tracking-widest uppercase">LIVE CITY OPERATIONS</span>
+           <Card className="flex-1 glass-card relative overflow-hidden bg-black min-h-[560px] border-white/10">
+              {/* Floating Map UI Overlay */}
+              <div className="absolute top-4 left-4 z-10 space-y-2">
+                 <div className="bg-[#030712]/80 backdrop-blur-xl px-4 py-2 border border-white/10 rounded-lg flex items-center gap-3 shadow-2xl">
+                    <div className="w-2 h-2 rounded-full bg-success animate-pulse shadow-[0_0_10px_#00ff9d]" />
+                    <span className="text-[10px] font-black tracking-[0.2em] uppercase text-white">LIVE OPERATIONS FEED</span>
                  </div>
+                 
+                 {isEmergency && (
+                    <motion.div 
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        className="bg-danger/90 backdrop-blur-xl px-4 py-3 border border-danger/50 rounded-lg shadow-2xl"
+                    >
+                        <p className="text-[9px] font-black uppercase tracking-widest text-white mb-1">Active Emergency</p>
+                        <div className="flex items-center gap-4">
+                            <div>
+                                <p className="text-[8px] text-white/60 uppercase">Unit</p>
+                                <p className="text-sm font-black text-white">AMB-204</p>
+                            </div>
+                            <div className="w-[1px] h-6 bg-white/10" />
+                            <div>
+                                <p className="text-[8px] text-white/60 uppercase">ETA</p>
+                                <p className="text-sm font-black text-success">3.2m</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                 )}
               </div>
 
               <div className="absolute bottom-4 right-4 z-10">
-                 <div className="bg-secondary-background/80 backdrop-blur-md px-4 py-3 border border-border rounded-lg flex gap-6">
-                    <MapLegend label="Green" color="#39FF88" />
-                    <MapLegend label="Yellow" color="#FFC857" />
-                    <MapLegend label="Red" color="#FF5252" />
+                 <div className="bg-[#030712]/80 backdrop-blur-xl px-4 py-3 border border-white/10 rounded-xl flex gap-6 shadow-2xl">
+                    <MapLegend label="Optimal" color="#00ff9d" />
+                    <MapLegend label="Busy" color="#ffc857" />
+                    <MapLegend label="Congested" color="#ff4d4d" />
                  </div>
               </div>
-              {isEmergency && (
-                <div className="absolute left-4 bottom-4 z-10 rounded-lg border border-success/30 bg-background/85 p-4 shadow-neon-success backdrop-blur-md">
-                  <p className="text-[9px] font-black uppercase tracking-[0.25em] text-success">Ambulance Detected</p>
-                  <div className="mt-2 flex items-end gap-4">
-                    <div>
-                      <p className="text-[10px] text-text-secondary uppercase">ETA Before</p>
-                      <p className="text-2xl font-black text-danger">{corridorStatusData?.etaBefore ?? 8}m</p>
-                    </div>
-                    <div className="pb-1 text-xl text-primary">→</div>
-                    <div>
-                      <p className="text-[10px] text-text-secondary uppercase">ETA After</p>
-                      <p className="text-2xl font-black text-success">{corridorStatusData?.etaAfter ?? 4}m</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-text-secondary uppercase">Signals</p>
-                      <p className="text-2xl font-black text-primary">{corridorStatusData?.signalsOptimized ?? 4}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               <div className="w-full h-full min-h-[500px]">
                  <CommandCenterMap isEmergency={isEmergency} />
@@ -378,13 +393,16 @@ export default function CommandCenterPage() {
            </Card>
 
            {/* BOTTOM SECTION - ANALYTICS */}
-           <div className="h-[250px] grid grid-cols-2 gap-6">
-              <Card className="glow-card p-6">
+           <div className="h-[240px] grid grid-cols-2 gap-6">
+              <Card className="glass-card p-6 flex flex-col">
                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">Traffic Impact Metrics</h3>
-                    <BarChart3 size={14} className="text-primary" />
+                    <div className="flex items-center gap-2">
+                        <BarChart3 size={14} className="text-primary" />
+                        <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">Network Throughput</h3>
+                    </div>
+                    <span className="text-[10px] font-black text-success">+14.2%</span>
                  </div>
-                 <div className="flex-1 h-[140px]">
+                 <div className="flex-1">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={analyticsData}>
                             <defs>
@@ -393,11 +411,11 @@ export default function CommandCenterPage() {
                                     <stop offset="95%" stopColor="#00E5FF" stopOpacity={0}/>
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                             <XAxis dataKey="time" hide />
                             <YAxis hide domain={[0, 100]} />
                             <Tooltip 
-                                contentStyle={{ backgroundColor: '#0D1B24', border: '1px solid rgba(0,229,255,0.2)', fontSize: '10px' }}
+                                contentStyle={{ backgroundColor: '#030712', border: '1px solid rgba(255,255,255,0.1)', fontSize: '10px', borderRadius: '8px' }}
                                 itemStyle={{ color: '#00E5FF' }}
                             />
                             <Area type="monotone" dataKey="value" stroke="#00E5FF" fillOpacity={1} fill="url(#colorVal)" strokeWidth={2} />
@@ -407,10 +425,10 @@ export default function CommandCenterPage() {
               </Card>
 
               <div className="grid grid-cols-2 gap-4">
-                 <MetricBox label="DELAY REDUCED" value="24%" sub="System Avg" trend="up" color="success" />
-                 <MetricBox label="TIME SAVED" value="12.4 min" sub="Today" trend="up" color="success" />
-                 <MetricBox label="CO₂ SAVED" value="4.2 Ton" sub="Verified" trend="up" color="primary" />
-                 <MetricBox label="EMERGENCIES HANDLED" value="37" sub="Priority Runs" trend="up" color="primary" />
+                 <MetricBox label="DELAY REDUCTION" value="28%" sub="AI Optimization" trend="up" color="success" />
+                 <MetricBox label="ROUTE SCORE" value="98%" sub="Efficiency" trend="up" color="primary" />
+                 <MetricBox label="CO₂ SAVED" value="4.2T" sub="Daily Impact" trend="up" color="primary" />
+                 <MetricBox label="SIGNAL SYNC" value="18/18" sub="Node Health" trend="up" color="success" />
               </div>
            </div>
         </section>
@@ -418,37 +436,37 @@ export default function CommandCenterPage() {
         {/* RIGHT PANEL - WIRE FEED */}
         <aside className="space-y-6 flex flex-col h-full overflow-y-auto">
             
-            <section className="space-y-4 flex-1">
+            <section className="space-y-4 flex-1 flex flex-col">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">Wire Intelligence Feed</h3>
-                    <div className="flex items-center gap-1 text-[8px] font-bold text-primary animate-pulse">
-                        <Activity size={10} />
-                        LIVE
+                    <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">Intelligence Stream</h3>
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 rounded-full border border-primary/20">
+                        <Activity size={10} className="text-primary animate-pulse" />
+                        <span className="text-[8px] font-black text-primary uppercase">Live</span>
                     </div>
                 </div>
                 
-                <Card className="glow-card flex-1 flex flex-col p-0 overflow-hidden bg-black/20">
-                    <div className="bg-secondary-background/50 px-4 py-2 border-b border-border flex items-center justify-between">
-                        <span className="text-[9px] font-black text-text-secondary tracking-widest uppercase">Powered by Anakin Wire</span>
+                <Card className="glass-card flex-1 flex flex-col p-0 overflow-hidden bg-black/40">
+                    <div className="bg-white/5 px-4 py-2 border-b border-white/10 flex items-center justify-between">
+                        <span className="text-[9px] font-black text-text-secondary tracking-widest uppercase">System Logs</span>
                     </div>
-                    <div className="p-4 space-y-4 overflow-y-auto max-h-[400px]">
+                    <div className="p-4 space-y-4 overflow-y-auto max-h-[450px] scrollbar-hide">
                         {events.map((event, i) => {
                           const eventText = event.event ?? event.message ?? "Realtime city event";
                           const eventLocation = event.location ?? event.type ?? "ZONE-4";
                           const eventTime = event.timestamp ?? event.created_at ?? "live";
                           const isEmergencyEvent = eventText.includes("Emergency") || eventText.includes("Corridor") || eventLocation.includes("emergency");
                           return (
-                          <motion.div key={i} whileHover={{ scale: 1.02 }} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} className="flex gap-3 items-start group">
-                            <div className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shadow-neon shrink-0" />
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-[8px] font-bold text-text-secondary">{eventTime}</span>
+                          <motion.div key={i} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="flex gap-3 items-start group">
+                            <div className={cn("mt-1.5 w-1.5 h-1.5 rounded-full shrink-0", isEmergencyEvent ? "bg-danger shadow-[0_0_8px_#ff4d4d]" : "bg-primary shadow-[0_0_8px_#00e5ff]")} />
+                            <div className="space-y-1 flex-1">
+                              <div className="flex items-center justify-between">
                                 <span className={cn(
                                   "text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
                                   isEmergencyEvent ? "bg-danger/20 text-danger" : "bg-primary/20 text-primary"
                                 )}>{eventLocation}</span>
+                                <span className="text-[8px] font-bold text-text-secondary/50">{eventTime}</span>
                               </div>
-                              <p className="text-[11px] font-medium leading-tight group-hover:text-primary transition-colors cursor-default">
+                              <p className="text-[11px] font-medium leading-tight text-white/80 group-hover:text-white transition-colors">
                                 {eventText}
                               </p>
                             </div>
@@ -459,29 +477,59 @@ export default function CommandCenterPage() {
             </section>
 
             <section className="space-y-4">
-                <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">Operations Log</h3>
+                <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">Priority Alerts</h3>
                 <div className="space-y-3">
-                   <Card className="glow-card p-4 border-l-4 border-l-warning">
+                   <div className="p-4 rounded-xl bg-warning/5 border border-warning/20 border-l-4 border-l-warning backdrop-blur-sm">
                       <div className="flex items-center gap-2 mb-1">
                         <CloudRain size={12} className="text-warning" />
-                        <span className="text-[10px] font-black uppercase text-warning">Weather Alert</span>
+                        <span className="text-[10px] font-black uppercase text-warning">Weather Update</span>
                       </div>
-                      <p className="text-[11px] text-text-secondary">Light rain detected in Sector 7. Surface friction coefficient reduced by 15%.</p>
-                   </Card>
+                      <p className="text-[11px] text-white/60 font-medium">Light rain Sector 7. Surface friction reduced. AI adjusting speeds.</p>
+                   </div>
 
-                   <Card className="glow-card p-4 border-l-4 border-l-danger">
+                   <div className="p-4 rounded-xl bg-danger/5 border border-danger/20 border-l-4 border-l-danger backdrop-blur-sm">
                       <div className="flex items-center gap-2 mb-1">
                         <AlertTriangle size={12} className="text-danger" />
-                        <span className="text-[10px] font-black uppercase text-danger">Road Closure</span>
+                        <span className="text-[10px] font-black uppercase text-danger">Obstruction</span>
                       </div>
-                      <p className="text-[11px] text-text-secondary">Main St Eastbound closed due to maintenance. AI rerouting active.</p>
-                   </Card>
+                      <p className="text-[11px] text-white/60 font-medium">Main St East closed. Traffic redirected through spine road.</p>
+                   </div>
                 </div>
             </section>
 
         </aside>
 
       </div>
+
+      <style jsx global>{`
+        .glass-card {
+            background: rgba(11, 17, 32, 0.4);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+        }
+        .premium-btn {
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 1.25rem;
+            border-radius: 0.75rem;
+            border: 1px solid;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .premium-btn:hover {
+            background: rgba(255, 255, 255, 0.07);
+            transform: translateY(-1px);
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+      `}</style>
     </div>
   );
 }
@@ -489,7 +537,7 @@ export default function CommandCenterPage() {
 function StatusSmall({ label, value, status }: { label: string, value: string, status: 'good' | 'warn' | 'crit' }) {
     const color = status === 'good' ? 'text-success' : status === 'warn' ? 'text-warning' : 'text-danger';
     return (
-        <Card className="glow-card p-3 flex flex-col items-center justify-center text-center">
+        <Card className="glass-card p-3 flex flex-col items-center justify-center text-center border-white/5">
             <span className="text-[8px] font-black text-text-secondary tracking-widest uppercase mb-1">{label}</span>
             <span className={cn("text-xs font-black", color)}>{value}</span>
         </Card>
@@ -498,23 +546,25 @@ function StatusSmall({ label, value, status }: { label: string, value: string, s
 
 function StatusPill({ label }: { label: string }) {
     return (
-        <div className="flex items-center gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2 shadow-neon-success">
-            <span className="h-2 w-2 rounded-full bg-success shadow-neon-success animate-pulse" />
-            <span className="whitespace-nowrap text-[8px] font-black uppercase tracking-widest text-success">{label}</span>
+        <div className="flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-3 py-1.5 shadow-[0_0_15px_rgba(0,255,157,0.1)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+            <span className="whitespace-nowrap text-[9px] font-black uppercase tracking-tight text-success">{label}</span>
         </div>
     )
 }
 
 function MetricBox({ label, value, sub, color }: { label: string, value: string, sub: string, trend: 'up' | 'down', color: 'success' | 'primary' | 'danger' }) {
   const textColor = color === 'success' ? 'text-success' : color === 'primary' ? 'text-primary' : 'text-danger';
+  const borderColor = color === 'success' ? 'border-success/20' : color === 'primary' ? 'border-primary/20' : 'border-danger/20';
+  
   return (
-    <motion.div whileHover={{ y: -6 }} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-      <Card className="glow-card p-5 flex min-h-[112px] flex-col justify-between">
+    <motion.div whileHover={{ y: -4 }}>
+      <Card className={cn("glass-card p-5 flex flex-col justify-between h-full", borderColor)}>
         <span className="text-[9px] font-black text-text-secondary tracking-widest uppercase">{label}</span>
         <div className="my-1">
-          <span className={cn("text-3xl font-black tracking-normal", textColor)}>{value}</span>
+          <span className={cn("text-2xl font-black tracking-tighter", textColor)}>{value}</span>
         </div>
-        <span className="text-[9px] font-bold text-text-secondary uppercase opacity-60">{sub}</span>
+        <span className="text-[9px] font-bold text-text-secondary uppercase opacity-40">{sub}</span>
       </Card>
     </motion.div>
   )
@@ -523,8 +573,8 @@ function MetricBox({ label, value, sub, color }: { label: string, value: string,
 function MapLegend({ label, color }: { label: string, color: string }) {
     return (
         <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-            <span className="text-[10px] font-black text-text-primary uppercase tracking-widest">{label}</span>
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}` }} />
+            <span className="text-[9px] font-black text-white/70 uppercase tracking-widest">{label}</span>
         </div>
     )
 }
