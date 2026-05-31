@@ -46,8 +46,11 @@ export interface Alert {
 
 export interface TrafficEvent {
   id: number;
-  event: string;
-  timestamp: string;
+  event?: string;
+  message?: string;
+  timestamp?: string;
+  created_at?: string;
+  type?: string;
   /** Optional location or zone identifier for the event */
   location?: string;
 }
@@ -187,7 +190,12 @@ export async function fetchAnalytics(): Promise<Record<string, unknown>> {
 export async function fetchEvents(): Promise<TrafficEvent[]> {
   try {
     const { data } = await api.get<TrafficEvent[]>("/events");
-    return data;
+    return data.map((event) => ({
+      ...event,
+      event: event.event ?? event.message ?? "Realtime city event",
+      timestamp: event.timestamp ?? event.created_at ?? "live",
+      location: event.location ?? event.type ?? "ZONE-4",
+    }));
   } catch (error) {
     throw handleApiError(error);
   }

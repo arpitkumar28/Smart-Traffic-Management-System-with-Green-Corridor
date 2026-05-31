@@ -325,23 +325,28 @@ export default function CommandCenterPage() {
                         <span className="text-[9px] font-black text-text-secondary tracking-widest uppercase">Powered by Anakin Wire</span>
                     </div>
                     <div className="p-4 space-y-4 overflow-y-auto max-h-[400px]">
-                        {events.map((event, i) => (
+                        {events.map((event, i) => {
+                          const eventText = event.event ?? event.message ?? "Realtime city event";
+                          const eventLocation = event.location ?? event.type ?? "ZONE-4";
+                          const eventTime = event.timestamp ?? event.created_at ?? "live";
+                          const isEmergencyEvent = eventText.includes("Emergency") || eventText.includes("Corridor") || eventLocation.includes("emergency");
+                          return (
                           <motion.div key={i} whileHover={{ scale: 1.02 }} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} className="flex gap-3 items-start group">
                             <div className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shadow-neon shrink-0" />
                             <div className="space-y-1">
                               <div className="flex items-center gap-2">
-                                <span className="text-[8px] font-bold text-text-secondary">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                <span className="text-[8px] font-bold text-text-secondary">{eventTime}</span>
                                 <span className={cn(
                                   "text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
-                                  event.event.includes("Emergency") ? "bg-danger/20 text-danger" : "bg-primary/20 text-primary"
-                                )}>{event.location || "ZONE-4"}</span>
+                                  isEmergencyEvent ? "bg-danger/20 text-danger" : "bg-primary/20 text-primary"
+                                )}>{eventLocation}</span>
                               </div>
                               <p className="text-[11px] font-medium leading-tight group-hover:text-primary transition-colors cursor-default">
-                                {event.event}
+                                {eventText}
                               </p>
                             </div>
                           </motion.div>
-                        ))}
+                        )})}
                     </div>
                 </Card>
             </section>

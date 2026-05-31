@@ -28,8 +28,9 @@ export default function EmergencyPage() {
     // Set up WebSocket for real-time events
     const socket = openGreenFlowSocket(
       (message) => {
-        if (message.type === "event_update") {
-          const event = message.payload as TrafficEvent;
+        if (message.type === "event_update" || message.type === "event_updates") {
+          const payload = message.payload as { event?: TrafficEvent };
+          const event = payload.event ?? (message.payload as TrafficEvent);
           setRecentEvents((prev) => [event, ...prev].slice(0, 3));
         }
       },
@@ -114,10 +115,10 @@ export default function EmergencyPage() {
           <Card>
             <h2 className="text-xl font-bold">Recent Events</h2>
             <div className="mt-5 space-y-3">
-              {recentEvents.map((event) => (
-                <div key={event.id} className="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white/72">
-                  <p className="font-semibold">{event.event}</p>
-                  <p className="text-xs text-white/50 mt-1">{new Date(event.timestamp).toLocaleTimeString()}</p>
+              {recentEvents.map((event, index) => (
+                <div key={event.id ?? index} className="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white/72">
+                  <p className="font-semibold">{event.event ?? event.message ?? "Realtime city event"}</p>
+                  <p className="text-xs text-white/50 mt-1">{event.timestamp ?? event.created_at ?? "live"}</p>
                 </div>
               ))}
             </div>
