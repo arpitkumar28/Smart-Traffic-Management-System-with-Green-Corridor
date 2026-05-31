@@ -11,14 +11,14 @@
 
 /* Design tokens (palette) */
 :root {
-  --bg: #050B12;
-  --bg-secondary: #07171B;
-  --card-bg: #0D1B24;
+  --bg: #030712;
+  --bg-secondary: #071A24;
+  --card-bg: #071A24;
   --border: rgba(0,229,255,0.15);
   --primary: #00E5FF;
-  --success: #00FF88;
+  --success: #39FF88;
   --warning: #FFC857;
-  --danger: #FF5252;
+  --danger: #FF4D4D;
   --text-primary: #FFFFFF;
   --text-secondary: rgba(255,255,255,0.65);
 }
@@ -30,7 +30,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #050B12;
+  background-color: #030712;
   color: #FFFFFF;
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
@@ -44,9 +44,11 @@ body {
 }
 
 .glow-card {
-  background: #0D1B24;
+  background: rgba(7, 26, 36, 0.85);
   border: 1px solid rgba(0, 229, 255, 0.15);
+  backdrop-filter: blur(20px);
   transition: all 0.3s ease;
+  box-shadow: 0 0 25px rgba(0,229,255,0.08);
 }
 
 .glow-card:hover {
@@ -110,9 +112,36 @@ body {
 
 /* Custom Leaflet overrides for dark mode theme */
 .leaflet-container {
-  background: #050B12 !important;
+  background: #030712 !important;
 }
 
 .leaflet-tile-pane {
-  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(180deg) saturate(0.3);
+  filter: brightness(0.85) contrast(1.08) saturate(1.08);
+}
+
+.leaflet-tooltip {
+  border: 1px solid rgba(0, 229, 255, 0.18) !important;
+  background: rgba(3, 7, 18, 0.86) !important;
+  color: #fff !important;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.12) !important;
+}
+
+.leaflet-tooltip::before {
+  display: none;
+}
+
+@keyframes marker-glow {
+  0%, 100% { transform: scale(0.92); opacity: 0.55; }
+  50% { transform: scale(1.18); opacity: 1; }
+}
+
+.signal-dot {
+  animation: marker-glow 1.8s ease-in-out infinite;
+}
+
+.mission-shell {
+  background:
+    radial-gradient(circle at 22% 0%, rgba(0, 229, 255, 0.12), transparent 28%),
+    radial-gradient(circle at 86% 12%, rgba(57, 255, 136, 0.10), transparent 24%),
+    linear-gradient(135deg, #030712 0%, #06111a 45%, #030712 100%);
 }

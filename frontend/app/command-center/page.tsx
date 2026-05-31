@@ -117,9 +117,24 @@ export default function CommandCenterPage() {
 
   return (
     <div className={cn(
-      "flex flex-col gap-6 h-full transition-all duration-700",
+      "mission-shell flex flex-col gap-6 min-h-screen rounded-lg p-5 transition-all duration-700",
       isEmergency && "emergency-mode-active"
     )}>
+      <header className="space-y-4">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <p className="text-[11px] font-black tracking-[0.45em] text-primary uppercase">Smart City Operations Center</p>
+            <h1 className="mt-2 text-4xl xl:text-6xl font-black tracking-normal text-white neon-text">REAL-TIME TRAFFIC INTELLIGENCE</h1>
+            <p className="mt-3 text-sm text-text-secondary">AI-powered congestion prediction and emergency corridor automation</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <StatusPill label="SYSTEM ONLINE" />
+            <StatusPill label="AI ENGINE ACTIVE" />
+            <StatusPill label="SIGNAL NETWORK CONNECTED" />
+            <StatusPill label="EMERGENCY NETWORK READY" />
+          </div>
+        </div>
+      </header>
       
       {/* EMERGENCY OVERLAY HEADER */}
       <AnimatePresence>
@@ -135,14 +150,14 @@ export default function CommandCenterPage() {
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[20%_60%_20%] gap-6 flex-1">
+      <div className="grid grid-cols-1 xl:grid-cols-[22%_53%_25%] gap-6 flex-1">
         
         {/* LEFT PANEL - AI & STATUS */}
         <aside className="space-y-6 flex flex-col h-full overflow-y-auto">
           
           {/* AI INTELLIGENCE */}
           <section className="space-y-4">
-            <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">AI Intelligence</h3>
+            <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">AI Command</h3>
             <motion.div whileHover={{ y: -6 }} transition={{ type: 'spring', stiffness: 220 }}>
               <Card className="glow-card p-5 space-y-4">
                <div className="flex items-center justify-between">
@@ -164,20 +179,33 @@ export default function CommandCenterPage() {
                  </div>
                  <div className="flex justify-between items-center text-[10px] font-[600]">
                    <span className="text-text-secondary uppercase">AI Confidence</span>
-                   <span className="text-primary font-[800]">92%</span>
+                   <span className="text-primary font-[800]">97%</span>
                  </div>
                </div>
               </Card>
             </motion.div>
 
-            <Card className="glow-card p-5 border-primary/20 bg-primary/5">
+            <Card className="glow-card p-5 border-warning/30 bg-warning/5">
                 <div className="flex items-center gap-2 mb-3">
-                    <Cpu size={14} className="text-primary" />
-                    <span className="text-[10px] font-black tracking-widest text-primary uppercase">Suggested Action</span>
+                    <AlertTriangle size={14} className="text-warning" />
+                    <span className="text-[10px] font-black tracking-widest text-warning uppercase">AI Recommendation</span>
                 </div>
-                <p className="text-xs font-medium leading-relaxed">
-                    Extend Signal Cycle <span className="text-primary font-bold">+12s</span> at Metro Junction to clear buildup.
-                </p>
+                <div className="space-y-3">
+                  <p className="text-sm font-black text-white">Heavy congestion predicted</p>
+                  <div className="grid grid-cols-2 gap-2 text-[10px]">
+                    <div>
+                      <p className="text-text-secondary uppercase">Location</p>
+                      <p className="font-bold text-primary">Metro Junction</p>
+                    </div>
+                    <div>
+                      <p className="text-text-secondary uppercase">Confidence</p>
+                      <p className="font-bold text-success">92%</p>
+                    </div>
+                  </div>
+                  <p className="text-xs font-medium leading-relaxed">
+                    Action: <span className="text-warning font-bold">Extend green cycle +12s</span>
+                  </p>
+                </div>
             </Card>
           </section>
 
@@ -249,7 +277,11 @@ export default function CommandCenterPage() {
 
         {/* CENTER PANEL - LIVE MAP */}
         <section className="flex flex-col gap-6 h-full">
-           <Card className="flex-1 glow-card relative overflow-hidden bg-black/40">
+           <div>
+             <h2 className="text-[10px] font-black tracking-[0.35em] text-primary uppercase">City Operations Command Center</h2>
+             <p className="mt-1 text-xs text-text-secondary">AI Traffic Intelligence • Emergency Routing • Green Corridor Control</p>
+           </div>
+           <Card className="flex-1 glow-card relative overflow-hidden bg-black/40 min-h-[560px]">
               <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
                  <div className="bg-secondary-background/80 backdrop-blur-md px-4 py-2 border border-border rounded flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
@@ -259,7 +291,7 @@ export default function CommandCenterPage() {
 
               <div className="absolute bottom-4 right-4 z-10">
                  <div className="bg-secondary-background/80 backdrop-blur-md px-4 py-3 border border-border rounded-lg flex gap-6">
-                    <MapLegend label="Green" color="#00FF88" />
+                    <MapLegend label="Green" color="#39FF88" />
                     <MapLegend label="Yellow" color="#FFC857" />
                     <MapLegend label="Red" color="#FF5252" />
                  </div>
@@ -301,9 +333,9 @@ export default function CommandCenterPage() {
 
               <div className="grid grid-cols-2 gap-4">
                  <MetricBox label="DELAY REDUCED" value="24%" sub="System Avg" trend="up" color="success" />
-                 <MetricBox label="TIME SAVED" value="12.4m" sub="Total Today" trend="up" color="success" />
-                 <MetricBox label="CO2 REDUCTION" value="4.2t" sub="Verified" trend="up" color="primary" />
-                 <MetricBox label="AI DECISIONS" value="1,422" sub="Autopilot" trend="up" color="primary" />
+                 <MetricBox label="TIME SAVED" value="12.4 min" sub="Today" trend="up" color="success" />
+                 <MetricBox label="CO₂ SAVED" value="4.2 Ton" sub="Verified" trend="up" color="primary" />
+                 <MetricBox label="EMERGENCIES HANDLED" value="37" sub="Priority Runs" trend="up" color="primary" />
               </div>
            </div>
         </section>
@@ -389,14 +421,23 @@ function StatusSmall({ label, value, status }: { label: string, value: string, s
     )
 }
 
+function StatusPill({ label }: { label: string }) {
+    return (
+        <div className="flex items-center gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2 shadow-neon-success">
+            <span className="h-2 w-2 rounded-full bg-success shadow-neon-success animate-pulse" />
+            <span className="whitespace-nowrap text-[8px] font-black uppercase tracking-widest text-success">{label}</span>
+        </div>
+    )
+}
+
 function MetricBox({ label, value, sub, color }: { label: string, value: string, sub: string, trend: 'up' | 'down', color: 'success' | 'primary' | 'danger' }) {
   const textColor = color === 'success' ? 'text-success' : color === 'primary' ? 'text-primary' : 'text-danger';
   return (
     <motion.div whileHover={{ y: -6 }} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-      <Card className="glow-card p-4 flex flex-col justify-between">
+      <Card className="glow-card p-5 flex min-h-[112px] flex-col justify-between">
         <span className="text-[9px] font-black text-text-secondary tracking-widest uppercase">{label}</span>
         <div className="my-1">
-          <span className={cn("text-2xl font-black", textColor)}>{value}</span>
+          <span className={cn("text-3xl font-black tracking-normal", textColor)}>{value}</span>
         </div>
         <span className="text-[9px] font-bold text-text-secondary uppercase opacity-60">{sub}</span>
       </Card>

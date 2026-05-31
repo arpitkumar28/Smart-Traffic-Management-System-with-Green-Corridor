@@ -91,12 +91,53 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
           <HeatLayerFallback map={mapInstance} L={L} />
         )}
 
+        <Polyline
+          positions={greenCorridorRoute}
+          pathOptions={{ 
+            color: "#00E5FF", 
+            weight: 2, 
+            opacity: 0.35,
+            dashArray: "4, 10",
+            lineCap: "round"
+          }}
+        />
+
+        <Polyline
+          positions={mapSensors.map((sensor: any) => sensor.position)}
+          pathOptions={{
+            color: "#64748b",
+            weight: 2,
+            opacity: 0.32,
+            dashArray: "2, 8",
+            lineCap: "round"
+          }}
+        />
+
+        {[
+          { center: [37.778, -122.397], color: "#FF4D4D", radius: 260, label: "Congestion Zone" },
+          { center: [37.783, -122.401], color: "#FFC857", radius: 220, label: "Moderate Load" },
+          { center: [37.775, -122.392], color: "#39FF88", radius: 180, label: "Hospital Priority" },
+        ].map((zone: any) => (
+          <CircleMarker
+            key={zone.label}
+            center={zone.center}
+            radius={zone.radius / 28}
+            pathOptions={{
+              color: zone.color,
+              fillColor: zone.color,
+              fillOpacity: 0.12,
+              opacity: 0.36,
+              weight: 1,
+            }}
+          />
+        ))}
+
         {isEmergency && (
           <Polyline
             positions={greenCorridorRoute}
             pathOptions={{ 
-              color: "#00FF88", 
-              weight: 6, 
+              color: "#39FF88", 
+              weight: 8, 
               opacity: 0.95,
               dashArray: "8, 8",
               lineCap: "round",
@@ -106,7 +147,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
         )}
 
         {mapSensors.map((sensor: any) => {
-          const color = sensor.status === "priority" ? "#00FF88" : sensor.status === "red" ? "#FF5252" : "#FFC857";
+          const color = sensor.status === "priority" ? "#39FF88" : sensor.status === "red" ? "#FF4D4D" : "#FFC857";
           const isActive = isEmergency && sensor.status === "priority";
           
           return (
@@ -114,17 +155,17 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
               key={sensor.id}
               center={sensor.position}
               pathOptions={{ 
-                color: isActive ? "#00FF88" : color, 
-                fillColor: isActive ? "#00FF88" : color, 
+                color: isActive ? "#39FF88" : color, 
+                fillColor: isActive ? "#39FF88" : color, 
                 fillOpacity: 0.9, 
                 weight: isActive ? 4 : 2,
-                className: isActive ? "emergency-pulse" : "" 
+                className: isActive ? "emergency-pulse" : "signal-dot" 
               }}
               radius={isActive ? 12 : 8}
             >
-              <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
-                <div className="bg-card border border-border p-2 rounded text-[10px] font-bold uppercase tracking-wider">
-                  <div className="text-text-primary mb-1">{sensor.label}</div>
+              <Tooltip permanent direction="top" offset={[0, -10]} opacity={0.95}>
+                <div className="p-2 rounded text-[10px] font-bold uppercase tracking-wider">
+                  <div className="text-text-primary mb-1 whitespace-nowrap">{sensor.label}</div>
                   <div className="flex items-center gap-2">
                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
                      <span style={{ color }}>{sensor.status}</span>
@@ -142,7 +183,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
             position={vehiclePosition}
             icon={L.divIcon({
               className: '',
-              html: `<div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(45deg,#00FF88,#00E5FF);box-shadow:0 0 12px rgba(0,255,136,0.25);border:2px solid rgba(255,255,255,0.06)" class="route-pulse"></div>`
+              html: `<div class="route-pulse" style="width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,#39FF88,#00E5FF);box-shadow:0 0 28px rgba(57,255,136,0.55);border:2px solid rgba(255,255,255,0.25);display:grid;place-items:center;font-size:18px">🚑</div>`
             })}
           />
         )}
@@ -150,7 +191,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
           {isEmergency && (
             <CircleMarker
              center={greenCorridorRoute[0]}
-             pathOptions={{ color: '#00FF88', fillColor: '#00FF88', fillOpacity: 1, weight: 2, className: 'route-pulse' }}
+             pathOptions={{ color: '#39FF88', fillColor: '#39FF88', fillOpacity: 1, weight: 2, className: 'route-pulse' }}
              radius={12}
             >
               <Tooltip permanent direction="right" offset={[15, 0]}>
@@ -165,7 +206,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
       </MapContainer>
 
       <div className="absolute top-4 right-4 z-[1000] pointer-events-none">
-         <div className="bg-secondary-background/80 backdrop-blur-md border border-border p-3 rounded flex flex-col gap-2">
+         <div className="bg-secondary-background/80 backdrop-blur-md border border-border p-3 rounded-lg flex flex-col gap-2 shadow-neon">
             <div className="flex items-center justify-between gap-8">
                <span className="text-[8px] font-black text-text-secondary uppercase">Satellite Link</span>
                <span className="text-[8px] font-black text-success uppercase">Active</span>

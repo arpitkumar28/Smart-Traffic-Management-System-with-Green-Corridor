@@ -5,14 +5,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#050B12",
-        "secondary-background": "#07171B",
-        card: "#0D1B24",
+        background: "#030712",
+        "secondary-background": "#071A24",
+        card: "#071A24",
         border: "rgba(0,229,255,0.15)",
         primary: "#00E5FF",
-        success: "#00FF88",
+        success: "#39FF88",
         warning: "#FFC857",
-        danger: "#FF5252",
+        danger: "#FF4D4D",
         "text-primary": "#FFFFFF",
         "text-secondary": "rgba(255,255,255,0.65)",
       },
