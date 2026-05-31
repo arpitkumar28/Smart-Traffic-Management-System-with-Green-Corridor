@@ -48,6 +48,8 @@ export interface TrafficEvent {
   id: number;
   event: string;
   timestamp: string;
+  /** Optional location or zone identifier for the event */
+  location?: string;
 }
 
 export interface AnalyticsData {
