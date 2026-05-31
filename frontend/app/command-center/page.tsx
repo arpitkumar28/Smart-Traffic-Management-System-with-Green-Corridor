@@ -29,7 +29,8 @@ import {
   retryRequest, 
   type DashboardMetrics, 
   type Alert, 
-  type TrafficEvent 
+  type TrafficEvent,
+  type GreenCorridorResponse
 } from "../../lib/api";
 
 import { 
@@ -57,6 +58,24 @@ export default function CommandCenterPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [events, setEvents] = useState<TrafficEvent[]>([]);
   const [isEmergency, setIsEmergency] = useState(false);
+  const [corridorStatusData, setCorridorStatusData] = useState<GreenCorridorResponse | null>(null);
+
+  // Derived display values for hero tiles (defensive checks)
+  const routeLengthDisplay = corridorStatusData
+    ? (corridorStatusData.route_coords && corridorStatusData.route_coords.length > 0
+        ? `${(corridorStatusData.route_coords.length / 1000).toFixed(1)} km`
+        : corridorStatusData.route
+          ? `${corridorStatusData.route.length} km`
+          : '3.4 km')
+    : '3.4 km';
+
+  const signalsSyncedDisplay = corridorStatusData
+    ? `${corridorStatusData.signalsSynced ?? corridorStatusData.signalsOptimized ?? 0} / ${corridorStatusData.signalsOptimized ?? corridorStatusData.signalsSynced ?? '18'}`
+    : '18 / 18';
+
+  const timeSavedDisplay = corridorStatusData
+    ? `${corridorStatusData.timeSaved ?? corridorStatusData.etaAfter ?? '6.2m'}`
+    : '6.2m';
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -85,12 +104,14 @@ export default function CommandCenterPage() {
     if (!isEmergency) {
         setIsEmergency(true);
         try {
-            await triggerEmergencyCorridor("AMB-COMMAND", "City General");
+        const resp = await triggerEmergencyCorridor("AMB-COMMAND", "City General");
+        setCorridorStatusData(resp);
         } catch (e) {
             console.log("Emergency triggered (simulation mode)");
         }
     } else {
         setIsEmergency(false);
+      setCorridorStatusData(null);
     }
   };
 
@@ -122,29 +143,32 @@ export default function CommandCenterPage() {
           {/* AI INTELLIGENCE */}
           <section className="space-y-4">
             <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">AI Intelligence</h3>
-            <Card className="glow-card p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-text-secondary">AI TRAFFIC HEALTH</span>
-                <span className="text-success font-black">82%</span>
-              </div>
-              <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+            <motion.div whileHover={{ y: -6 }} transition={{ type: 'spring', stiffness: 220 }}>
+              <Card className="glow-card p-5 space-y-4">
+               <div className="flex items-center justify-between">
+                <span className="text-xs font-[800] text-text-secondary uppercase">AI TRAFFIC HEALTH</span>
+                <span className="text-success font-[900] text-2xl">82%</span>
+               </div>
+               <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                 <motion.div 
-                   initial={{ width: 0 }} 
-                   animate={{ width: "82%" }} 
-                   className="h-full bg-success"
+                  initial={{ width: 0 }} 
+                  animate={{ width: "82%" }} 
+                  transition={{ duration: 1.2 }}
+                  className="h-full bg-success"
                 />
-              </div>
-              <div className="pt-2 border-t border-border space-y-3">
-                 <div className="flex justify-between items-center text-[10px] font-bold">
-                    <span className="text-text-secondary uppercase">Predicted Congestion</span>
-                    <span className="text-warning uppercase">High</span>
+               </div>
+               <div className="pt-3 border-t border-border space-y-2">
+                 <div className="flex justify-between items-center text-[10px] font-[600]">
+                   <span className="text-text-secondary uppercase">Predicted Congestion</span>
+                   <span className="text-warning uppercase font-[800]">High</span>
                  </div>
-                 <div className="flex justify-between items-center text-[10px] font-bold">
-                    <span className="text-text-secondary uppercase">AI Confidence</span>
-                    <span className="text-primary">92%</span>
+                 <div className="flex justify-between items-center text-[10px] font-[600]">
+                   <span className="text-text-secondary uppercase">AI Confidence</span>
+                   <span className="text-primary font-[800]">92%</span>
                  </div>
-              </div>
-            </Card>
+               </div>
+              </Card>
+            </motion.div>
 
             <Card className="glow-card p-5 border-primary/20 bg-primary/5">
                 <div className="flex items-center gap-2 mb-3">
@@ -171,32 +195,53 @@ export default function CommandCenterPage() {
           {/* EMERGENCY STATUS */}
           <section className="space-y-4 flex-1">
             <h3 className="text-[10px] font-black tracking-[0.3em] text-text-secondary uppercase">Emergency Status</h3>
-            <Card className={cn(
-                "glow-card p-5 transition-colors duration-500",
-                isEmergency ? "bg-danger/10 border-danger/40" : ""
-            )}>
-              <div className="flex flex-col items-center text-center gap-4">
-                 <div className={cn(
-                     "w-12 h-12 rounded-full flex items-center justify-center border transition-all",
-                     isEmergency ? "bg-danger/20 border-danger text-danger animate-pulse" : "bg-white/5 border-white/10 text-text-secondary"
-                 )}>
-                    <Ambulance size={24} />
-                 </div>
-                 <div>
-                    <h4 className="font-black text-sm uppercase">Green Corridor Control</h4>
-                    <p className="text-[10px] text-text-secondary mt-1 uppercase tracking-wider">Ready for priority dispatch</p>
-                 </div>
-                 <button 
+            <Card className={cn("glow-card p-5 transition-colors duration-500 bg-card-background", isEmergency ? "border-danger/40" : "") }>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("w-14 h-14 rounded-lg flex items-center justify-center border", isEmergency ? "bg-danger/20 border-danger text-danger" : "bg-white/5 border-white/10 text-text-secondary") }>
+                      <Ambulance size={28} />
+                    </div>
+                    <div>
+                      <h3 className="font-[900] text-lg uppercase">GREEN CORRIDOR CONTROL</h3>
+                      <p className="text-[11px] text-text-secondary uppercase tracking-wide">Priority routing for emergency vehicles</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[12px] text-text-secondary">Status</div>
+                    <div className={cn("mt-1 font-[800] uppercase", isEmergency ? "text-danger" : "text-success")}>{isEmergency ? "EMERGENCY ACTIVE" : "STANDBY"}</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="p-3 bg-secondary-background/60 rounded border border-border text-center">
+                    <div className="text-[10px] text-text-secondary uppercase">Route Length</div>
+                    <div className="font-[900] text-lg neon-text">{routeLengthDisplay}</div>
+                  </div>
+                  <div className="p-3 bg-secondary-background/60 rounded border border-border text-center">
+                    <div className="text-[10px] text-text-secondary uppercase">Signals Synced</div>
+                    <div className="font-[900] text-lg neon-text">{signalsSyncedDisplay}</div>
+                  </div>
+                  <div className="p-3 bg-secondary-background/60 rounded border border-border text-center">
+                    <div className="text-[10px] text-text-secondary uppercase">Time Saved</div>
+                    <div className="font-[900] text-lg neon-text">{timeSavedDisplay}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <motion.button
                     onClick={toggleEmergency}
+                    whileTap={{ scale: 0.98 }}
                     className={cn(
-                        "w-full py-3 rounded-lg font-black text-xs tracking-widest transition-all",
-                        isEmergency 
-                            ? "bg-danger text-white shadow-neon-danger" 
-                            : "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
+                      "flex-1 py-3 rounded-lg font-[900] text-sm tracking-widest transition-all",
+                      isEmergency ? "bg-danger text-white shadow-neon" : "bg-primary text-background"
                     )}
-                 >
-                    {isEmergency ? "DEACTIVATE CORRIDOR" : "ACTIVATE GREEN CORRIDOR"}
-                 </button>
+                  >
+                    {isEmergency ? "DEACTIVATE GREEN CORRIDOR" : "🚑 ACTIVATE GREEN CORRIDOR"}
+                  </motion.button>
+
+                  <button className="px-4 py-3 rounded-lg bg-secondary-background/50 border border-border text-[12px] font-[600]">VIEW ROUTE</button>
+                </div>
               </div>
             </Card>
           </section>
@@ -281,21 +326,21 @@ export default function CommandCenterPage() {
                     </div>
                     <div className="p-4 space-y-4 overflow-y-auto max-h-[400px]">
                         {events.map((event, i) => (
-                            <div key={i} className="flex gap-3 items-start group">
-                                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shadow-neon shrink-0" />
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[8px] font-bold text-text-secondary">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                                        <span className={cn(
-                                            "text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
-                                            event.event.includes("Emergency") ? "bg-danger/20 text-danger" : "bg-primary/20 text-primary"
-                                        )}>{event.location || "ZONE-4"}</span>
-                                    </div>
-                                    <p className="text-[11px] font-medium leading-tight group-hover:text-primary transition-colors cursor-default">
-                                        {event.event}
-                                    </p>
-                                </div>
+                          <motion.div key={i} whileHover={{ scale: 1.02 }} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} className="flex gap-3 items-start group">
+                            <div className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shadow-neon shrink-0" />
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[8px] font-bold text-text-secondary">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                <span className={cn(
+                                  "text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
+                                  event.event.includes("Emergency") ? "bg-danger/20 text-danger" : "bg-primary/20 text-primary"
+                                )}>{event.location || "ZONE-4"}</span>
+                              </div>
+                              <p className="text-[11px] font-medium leading-tight group-hover:text-primary transition-colors cursor-default">
+                                {event.event}
+                              </p>
                             </div>
+                          </motion.div>
                         ))}
                     </div>
                 </Card>
@@ -340,16 +385,18 @@ function StatusSmall({ label, value, status }: { label: string, value: string, s
 }
 
 function MetricBox({ label, value, sub, color }: { label: string, value: string, sub: string, trend: 'up' | 'down', color: 'success' | 'primary' | 'danger' }) {
-    const textColor = color === 'success' ? 'text-success' : color === 'primary' ? 'text-primary' : 'text-danger';
-    return (
-        <Card className="glow-card p-4 flex flex-col justify-between">
-            <span className="text-[9px] font-black text-text-secondary tracking-widest uppercase">{label}</span>
-            <div className="my-1">
-                <span className={cn("text-2xl font-black", textColor)}>{value}</span>
-            </div>
-            <span className="text-[9px] font-bold text-text-secondary uppercase opacity-60">{sub}</span>
-        </Card>
-    )
+  const textColor = color === 'success' ? 'text-success' : color === 'primary' ? 'text-primary' : 'text-danger';
+  return (
+    <motion.div whileHover={{ y: -6 }} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+      <Card className="glow-card p-4 flex flex-col justify-between">
+        <span className="text-[9px] font-black text-text-secondary tracking-widest uppercase">{label}</span>
+        <div className="my-1">
+          <span className={cn("text-2xl font-black", textColor)}>{value}</span>
+        </div>
+        <span className="text-[9px] font-bold text-text-secondary uppercase opacity-60">{sub}</span>
+      </Card>
+    </motion.div>
+  )
 }
 
 function MapLegend({ label, color }: { label: string, color: string }) {

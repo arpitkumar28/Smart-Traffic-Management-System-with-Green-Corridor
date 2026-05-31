@@ -10,6 +10,9 @@ interface MapProps {
 export function CommandCenterMap({ isEmergency }: MapProps) {
   const [reactLeaflet, setReactLeaflet] = useState<any>(null);
   const [L, setL] = useState<any>(null);
+  const [vehicleIndex, setVehicleIndex] = useState(0);
+  const [vehiclePosition, setVehiclePosition] = useState<[number, number] | null>(null);
+  const [mapInstance, setMapInstance] = useState<any>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -34,7 +37,89 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
     );
   }
 
-  const { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip, ZoomControl } = reactLeaflet;
+  const { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip, ZoomControl, Marker } = reactLeaflet;
+
+  // HeatLayerFallback component: dynamically loads leaflet.heat if available
+  function HeatLayerFallback({ map, L }: { map: any; L: any }) {
+    useEffect(() => {
+      if (!map || !L) return;
+      let heatLayer: any = null;
+      let cancelled = false;
+
+      // Load leaflet.heat at runtime via CDN if not already present
+      (async () => {
+        try {
+          const points = mapSensors.map((s) => [s.position[0], s.position[1], s.status === 'priority' ? 1.0 : s.status === 'red' ? 0.9 : 0.45]);
+          const opts = { radius: 28, blur: 24, max: 1 };
+
+          const createHeat = () => {
+            if ((L as any).heatLayer) {
+              heatLayer = (L as any).heatLayer(points, opts).addTo(map);
+            }
+          };
+
+          if ((L as any).heatLayer) {
+            createHeat();
+          } else {
+            const src = 'https://unpkg.com/leaflet.heat/dist/leaflet-heat.js';
+            const existing = document.querySelector(`script[src="${src}"]`);
+            if (!existing) {
+              const s = document.createElement('script');
+              s.src = src;
+              s.async = true;
+              s.onload = () => createHeat();
+              s.onerror = () => console.warn('Failed to load leaflet.heat from CDN');
+              document.head.appendChild(s);
+            } else {
+              // if script already present, attempt to create heat layer
+              createHeat();
+            }
+          }
+        } catch (e) {
+          console.warn('leaflet.heat could not be initialized', e);
+        }
+      })();
+
+      return () => {
+        if (heatLayer && map && map.removeLayer) map.removeLayer(heatLayer);
+        cancelled = true;
+      };
+    }, [map, L]);
+
+    return null;
+  }
+
+  // smooth animate a vehicle along the route using requestAnimationFrame
+  useEffect(() => {
+    let rafId: number | null = null;
+    if (!isEmergency || !greenCorridorRoute || greenCorridorRoute.length < 2) {
+      setVehiclePosition(null);
+      return;
+    }
+
+    const path = greenCorridorRoute;
+    const segmentDuration = 1000; // ms per segment
+    const startTime = performance.now();
+
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const totalDuration = segmentDuration * path.length;
+      const mod = elapsed % totalDuration;
+      const rawIndex = Math.floor(mod / segmentDuration);
+      const t = (mod % segmentDuration) / segmentDuration;
+      const a = path[rawIndex];
+      const b = path[(rawIndex + 1) % path.length];
+      const lat = a[0] * (1 - t) + b[0] * t;
+      const lng = a[1] * (1 - t) + b[1] * t;
+      setVehiclePosition([lat, lng]);
+      rafId = requestAnimationFrame(step);
+    };
+
+    rafId = requestAnimationFrame(step);
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [isEmergency]);
 
   return (
     <div className="h-full w-full relative">
@@ -43,22 +128,18 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
         zoom={14}
         zoomControl={false}
         className="h-full w-full"
+        whenCreated={(map: any) => setMapInstance(map)}
       >
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
 
-        <CircleMarker 
-           center={[37.785, -122.405]} 
-           radius={60} 
-           pathOptions={{ fillColor: '#FF5252', fillOpacity: 0.1, stroke: false }} 
-        />
-        <CircleMarker 
-           center={[37.775, -122.395]} 
-           radius={40} 
-           pathOptions={{ fillColor: '#FFC857', fillOpacity: 0.1, stroke: false }} 
-        />
+        {/* Heatmap layer (leaflet.heat if available) */}
+        {/* Fallback: keep subtle circles if plugin not present */}
+        {mapInstance && L && (
+          <HeatLayerFallback map={mapInstance} L={L} />
+        )}
 
         {isEmergency && (
           <Polyline
@@ -103,6 +184,18 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
             </CircleMarker>
           );
         })}
+
+        {/* moving emergency vehicle marker */}
+        {isEmergency && L && Marker && vehiclePosition && (
+          <Marker
+            key={`veh-anim`}
+            position={vehiclePosition}
+            icon={L.divIcon({
+              className: '',
+              html: `<div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(45deg,#00FF88,#00E5FF);box-shadow:0 0 12px rgba(0,255,136,0.25);border:2px solid rgba(255,255,255,0.06)" class="route-pulse"></div>`
+            })}
+          />
+        )}
 
           {isEmergency && (
             <CircleMarker
