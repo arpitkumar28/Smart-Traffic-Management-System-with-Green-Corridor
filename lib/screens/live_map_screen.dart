@@ -68,35 +68,36 @@ class _LiveMapScreenState extends State<LiveMapScreen>
 
     return Stack(
       children: [
-        Column(
-          children: [
-            _buildHeader(controller),
-            
-            // Map Section
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.35,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                child: _buildMapSection(controller),
+        SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              _buildHeader(controller),
+              
+              // Map Section
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.35,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                  child: _buildMapSection(controller),
+                ),
               ),
-            ),
 
-            // AI Reasoning Engine (Hackathon Killer Feature)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: _AiReasoningEngine(controller: controller),
-            ),
-
-            // Green Corridor Status Widget
-            if (controller.emergencyActive)
+              // AI Reasoning Engine (Hackathon Killer Feature)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: _GreenCorridorStatus(controller: controller),
+                child: _AiReasoningEngine(controller: controller),
               ),
 
-            // Live Event Timeline & Quick Stats
-            Expanded(
-              child: Padding(
+              // Green Corridor Status Widget
+              if (controller.emergencyActive)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: _GreenCorridorStatus(controller: controller),
+                ),
+
+              // Live Event Timeline & Quick Stats
+              Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,8 +130,8 @@ class _LiveMapScreenState extends State<LiveMapScreen>
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         
         // Detailed Emergency Notification Overlay
@@ -214,7 +215,7 @@ class _LiveMapScreenState extends State<LiveMapScreen>
                   urlTemplate:
                       'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                   subdomains: const ['a', 'b', 'c', 'd'],
-                  userAgentPackageName: 'com.greenflow.ai',
+                  userAgentPackageName: 'com.example.smart_traffic_management_system_with_green_corridor',
                   retinaMode: RetinaMode.isHighDensity(context),
                 ),
                 if (controller.emergencyActive)
@@ -758,6 +759,7 @@ class _EventTimeline extends StatelessWidget {
       decoration: CyberDecoration.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -775,19 +777,19 @@ class _EventTimeline extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Expanded(
-            child: ListView.separated(
-              itemCount: controller.events.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final event = controller.events[index];
-                return _TimelineItem(
-                  message: event['message'] ?? event['event'] ?? '',
-                  time: event['created_at'] ?? event['timestamp'] ?? '',
-                  type: event['type'] ?? '',
-                );
-              },
-            ),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: controller.events.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final event = controller.events[index];
+              return _TimelineItem(
+                message: event['message'] ?? event['event'] ?? '',
+                time: event['created_at'] ?? event['timestamp'] ?? '',
+                type: event['type'] ?? '',
+              );
+            },
           ),
         ],
       ),
