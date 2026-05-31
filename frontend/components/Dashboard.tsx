@@ -424,7 +424,7 @@ export function Dashboard({ page = "dashboard" }: { page?: string }) {
                             </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                        <XAxis dataKey="time" stroke="rgba(255,255,255,0.2)" fontSize={9} fontWeights="900" />
+                        <XAxis dataKey="time" stroke="rgba(255,255,255,0.2)" fontSize={9} fontWeight="900" />
                         <YAxis hide />
                         <Tooltip contentStyle={{ background: "#030712", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", fontSize: "10px" }} />
                         <Area type="monotone" dataKey="density" stroke="#18f2ff" fillOpacity={1} fill="url(#colorDensity)" strokeWidth={3} />
