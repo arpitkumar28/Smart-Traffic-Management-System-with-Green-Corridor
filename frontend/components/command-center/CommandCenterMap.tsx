@@ -1,18 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { mapSensors, greenCorridorRoute } from "../../lib/commandCenterData";
+import { mapSensors, greenCorridorRoute as defaultRoute } from "../../lib/commandCenterData";
 import { HeatLayerFallback } from "./HeatLayerFallback";
 
 interface MapProps {
   isEmergency?: boolean;
+  routeCoords?: [number, number][];
 }
 
-export function CommandCenterMap({ isEmergency }: MapProps) {
+export function CommandCenterMap({ isEmergency, routeCoords }: MapProps) {
   const [reactLeaflet, setReactLeaflet] = useState<any>(null);
   const [L, setL] = useState<any>(null);
   const [vehiclePosition, setVehiclePosition] = useState<[number, number] | null>(null);
   const [mapInstance, setMapInstance] = useState<any>(null);
+
+  const activeRoute = routeCoords && routeCoords.length > 0 ? routeCoords : defaultRoute;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -29,13 +32,13 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
   // smooth animate a vehicle along the route using requestAnimationFrame
   useEffect(() => {
     let rafId: number | null = null;
-    if (!isEmergency || !greenCorridorRoute || greenCorridorRoute.length < 2) {
+    if (!isEmergency || !activeRoute || activeRoute.length < 2) {
       setVehiclePosition(null);
       return;
     }
 
-    const path = greenCorridorRoute;
-    const segmentDuration = 2000; // ms per segment - slowed down for better "wow"
+    const path = activeRoute;
+    const segmentDuration = 2000; // ms per segment
     const startTime = performance.now();
 
     const step = (now: number) => {
@@ -60,7 +63,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [isEmergency]);
+  }, [isEmergency, activeRoute]);
 
   if (!reactLeaflet || !L) {
     return (
@@ -78,7 +81,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
   return (
     <div className="h-full w-full relative">
       <MapContainer
-        center={[37.781, -122.399]}
+        center={activeRoute[0] || [37.781, -122.399]}
         zoom={14}
         zoomControl={false}
         className="h-full w-full"
@@ -96,7 +99,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
 
         {/* Static background routes */}
         <Polyline
-          positions={greenCorridorRoute}
+          positions={activeRoute}
           pathOptions={{ 
             color: "#00E5FF", 
             weight: 2, 
@@ -141,7 +144,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
         {isEmergency && (
           <>
             <Polyline
-              positions={greenCorridorRoute}
+              positions={activeRoute}
               pathOptions={{ 
                 color: "#00FF9D", 
                 weight: 10, 
@@ -150,7 +153,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
               }}
             />
             <Polyline
-              positions={greenCorridorRoute}
+              positions={activeRoute}
               pathOptions={{ 
                 color: "#00FF9D", 
                 weight: 4, 
@@ -200,7 +203,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
         {L && Marker && (
           <Marker
             key="hospital-marker"
-            position={greenCorridorRoute[greenCorridorRoute.length - 1]}
+            position={activeRoute[activeRoute.length - 1]}
             icon={L.divIcon({
               className: '',
               html: `<div class="relative">
@@ -219,7 +222,7 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
         {L && Marker && (
           <Marker
             key={`veh-anim-${isEmergency ? "active" : "standby"}`}
-            position={isEmergency && vehiclePosition ? vehiclePosition : greenCorridorRoute[0]}
+            position={isEmergency && vehiclePosition ? vehiclePosition : activeRoute[0]}
             icon={L.divIcon({
               className: '',
               html: `<div class="relative ${isEmergency ? "vehicle-glow" : ""}">

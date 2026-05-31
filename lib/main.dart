@@ -21,13 +21,13 @@ class GreenFlowMobileApp extends StatelessWidget {
         title: 'GreenFlow AI Mobile',
         theme: ThemeData(
           brightness: Brightness.dark,
-          scaffoldBackgroundColor: const Color(0xFF061014),
+          scaffoldBackgroundColor: const Color(0xFF030712),
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF18F2FF),
+            seedColor: const Color(0xFF00E5FF),
             brightness: Brightness.dark,
-            primary: const Color(0xFF18F2FF),
-            secondary: const Color(0xFF8CFF5A),
-            surface: const Color(0xFF0B191F),
+            primary: const Color(0xFF00E5FF),
+            secondary: const Color(0xFF00FF9D),
+            surface: const Color(0xFF07171B),
           ),
           useMaterial3: true,
           fontFamily: 'Roboto',

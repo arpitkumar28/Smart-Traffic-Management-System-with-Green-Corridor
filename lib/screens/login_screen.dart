@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const Center(
                 child: Icon(
                   Icons.radar_rounded,
-                  color: Color(0xFF18F2FF),
+                  color: Color(0xFF00E5FF),
                   size: 80,
                 ),
               ),
@@ -37,6 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontSize: 32,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -1,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -44,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Text(
                   'Urban Emergency Response Infrastructure',
                   style: TextStyle(
-                    color: Color(0xFF18F2FF),
+                    color: Color(0xFF00FF9D),
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                     letterSpacing: 1.5,
@@ -84,6 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 2,
+                        color: Color(0xFF00E5FF),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -92,10 +94,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         MaterialPageRoute(builder: (_) => const HomeScreen()),
                       ),
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF18F2FF),
-                        foregroundColor: Colors.black,
+                        backgroundColor: const Color(0xFF00E5FF),
+                        foregroundColor: const Color(0xFF030712),
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(color: Color(0xFF00FF9D), width: 0.5),
+                        ),
+                        elevation: 8,
+                        shadowColor: const Color(0xFF00E5FF).withOpacity(0.5),
                       ),
                       child: const Text('ENTER COMMAND CENTER', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
@@ -138,17 +145,18 @@ class _FeatureItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF18F2FF).withOpacity(0.1),
+              color: const Color(0xFF00E5FF).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.2)),
             ),
-            child: Icon(icon, color: const Color(0xFF18F2FF), size: 24),
+            child: Icon(icon, color: const Color(0xFF00E5FF), size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
                 Text(desc, style: const TextStyle(color: Colors.white54, fontSize: 12)),
               ],
             ),

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class GlassCard extends StatelessWidget {
@@ -6,7 +7,7 @@ class GlassCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(18),
     this.height,
     this.width,
-    this.borderRadius = 16,
+    this.borderRadius = 24,
     super.key,
   });
 
@@ -18,17 +19,29 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      padding: padding,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B191F).withOpacity(0.6),
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
-        // Removed heavy blue glow for a cleaner, professional look
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          width: width,
+          height: height,
+          padding: padding,
+          decoration: BoxDecoration(
+            color: const Color(0xFF07171B).withOpacity(0.7),
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF00E5FF).withOpacity(0.1),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: child,
+        ),
       ),
-      child: child,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/traffic_controller.dart';
+import '../widgets/glass_card.dart';
 
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
@@ -23,19 +24,21 @@ class AnalyticsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Analytics & Insights',
+                  'SYSTEM INSIGHTS',
                   style: TextStyle(
                     fontSize: 28,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w900,
                     color: Colors.white,
                     letterSpacing: -0.5,
                   ),
                 ),
                 Text(
-                  '24-Hour System Performance Report',
+                  'NEON DISTRICT REAL-TIME METRICS',
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withOpacity(0.5),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5,
+                    color: const Color(0xFF00E5FF).withOpacity(0.7),
                   ),
                 ),
               ],
@@ -47,15 +50,8 @@ class AnalyticsScreen extends StatelessWidget {
         SliverPadding(
           padding: const EdgeInsets.all(24),
           sliver: SliverToBoxAdapter(
-            child: Container(
+            child: GlassCard(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFF18F2FF).withOpacity(0.05),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: const Color(0xFF18F2FF).withOpacity(0.1),
-                ),
-              ),
               child: Column(
                 children: [
                   Row(
@@ -65,24 +61,21 @@ class AnalyticsScreen extends StatelessWidget {
                         'CITY EFFICIENCY SCORE',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w900,
                           letterSpacing: 1.2,
-                          color: Color(0xFF18F2FF),
+                          color: Color(0xFF00E5FF),
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF8CFF5A).withOpacity(0.1),
+                          color: const Color(0xFF00FF9D).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Text(
                           '↑ 4.2%',
                           style: TextStyle(
-                            color: Color(0xFF8CFF5A),
+                            color: Color(0xFF00FF9D),
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -103,7 +96,7 @@ class AnalyticsScreen extends StatelessWidget {
                   const SizedBox(
                     height: 100,
                     width: double.infinity,
-                    child: _CustomSparkline(color: Color(0xFF18F2FF)),
+                    child: _CustomSparkline(color: Color(0xFF00E5FF)),
                   ),
                 ],
               ),
@@ -124,13 +117,13 @@ class AnalyticsScreen extends StatelessWidget {
                 label: 'Response Gain',
                 value: '+$response%',
                 icon: Icons.bolt,
-                color: const Color(0xFF8CFF5A),
+                color: const Color(0xFF00FF9D),
               ),
               _ModernMetric(
                 label: 'CO2 Reduction',
                 value: '$co2%',
                 icon: Icons.eco,
-                color: Colors.greenAccent,
+                color: const Color(0xFF00FF9D),
               ),
               _ModernMetric(
                 label: 'Jams Prevented',
@@ -142,7 +135,7 @@ class AnalyticsScreen extends StatelessWidget {
                 label: 'Hours Saved',
                 value: '${controller.analytics['hoursSaved'] ?? 42}h',
                 icon: Icons.timer,
-                color: Colors.blueAccent,
+                color: const Color(0xFF00E5FF),
               ),
             ],
           ),
@@ -156,33 +149,29 @@ class AnalyticsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Connected Data Sources',
+                  'CONNECTED DATA SOURCES',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
                     color: Colors.white,
+                    letterSpacing: 1.0,
                   ),
                 ),
                 const SizedBox(height: 16),
                 _SourceTile(
                   label: 'Anakin Wire Intelligence',
-                  status: 'Optimal',
+                  status: 'OPTIMAL',
                   icon: Icons.bolt,
                 ),
                 _SourceTile(
                   label: 'City CCTV Network',
-                  status: 'Live',
+                  status: 'LIVE',
                   icon: Icons.camera_outdoor,
                 ),
                 _SourceTile(
                   label: 'Emergency Dispatch (911)',
-                  status: 'Active',
+                  status: 'ACTIVE',
                   icon: Icons.emergency,
-                ),
-                _SourceTile(
-                  label: 'Weather AI Station',
-                  status: 'Connected',
-                  icon: Icons.wb_sunny,
                 ),
               ],
             ),
@@ -210,13 +199,8 @@ class _ModernMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -227,17 +211,17 @@ class _ModernMetric extends StatelessWidget {
             value,
             style: const TextStyle(
               fontSize: 24,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w900,
               color: Colors.white,
             ),
           ),
           Text(
-            label,
+            label.toUpperCase(),
             style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
+              fontSize: 8,
+              fontWeight: FontWeight.w900,
               color: Colors.white.withOpacity(0.4),
-              letterSpacing: 0.5,
+              letterSpacing: 1.0,
             ),
           ),
         ],
@@ -247,15 +231,10 @@ class _ModernMetric extends StatelessWidget {
 }
 
 class _SourceTile extends StatelessWidget {
-  final String label;
-  final String status;
+  final String label, status;
   final IconData icon;
 
-  const _SourceTile({
-    required this.label,
-    required this.status,
-    required this.icon,
-  });
+  const _SourceTile({required this.label, required this.status, required this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -263,30 +242,23 @@ class _SourceTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.02),
+        color: const Color(0xFF07171B).withOpacity(0.4),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.1)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.white24, size: 20),
+          Icon(icon, color: const Color(0xFF00E5FF).withOpacity(0.5), size: 20),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
           Text(
             status,
-            style: const TextStyle(
-              color: Color(0xFF8CFF5A),
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(color: Color(0xFF00FF9D), fontSize: 10, fontWeight: FontWeight.w900),
           ),
         ],
       ),
@@ -297,7 +269,6 @@ class _SourceTile extends StatelessWidget {
 class _CustomSparkline extends StatelessWidget {
   final Color color;
   const _CustomSparkline({required this.color});
-
   @override
   Widget build(BuildContext context) {
     return CustomPaint(painter: _SparklinePainter(color: color));
@@ -310,42 +281,13 @@ class _SparklinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path = Path()
-      ..moveTo(0, size.height * 0.7)
-      ..lineTo(size.width * 0.1, size.height * 0.6)
-      ..lineTo(size.width * 0.2, size.height * 0.8)
-      ..lineTo(size.width * 0.3, size.height * 0.4)
-      ..lineTo(size.width * 0.4, size.height * 0.5)
-      ..lineTo(size.width * 0.5, size.height * 0.2)
-      ..lineTo(size.width * 0.6, size.height * 0.3)
-      ..lineTo(size.width * 0.7, size.height * 0.1)
-      ..lineTo(size.width * 0.8, size.height * 0.4)
-      ..lineTo(size.width * 0.9, size.height * 0.2)
-      ..lineTo(size.width, size.height * 0.3);
-
-    // Gradient below path
-    final fillPath = Path.from(path)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-
-    final fillPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [color.withOpacity(0.2), Colors.transparent],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-
+    final paint = Paint()..color = color..strokeWidth = 3..style = PaintingStyle.stroke..strokeCap = StrokeCap.round;
+    final path = Path()..moveTo(0, size.height * 0.7)..lineTo(size.width * 0.2, size.height * 0.8)..lineTo(size.width * 0.4, size.height * 0.4)..lineTo(size.width * 0.6, size.height * 0.6)..lineTo(size.width * 0.8, size.height * 0.2)..lineTo(size.width, size.height * 0.3);
+    final fillPath = Path.from(path)..lineTo(size.width, size.height)..lineTo(0, size.height)..close();
+    final fillPaint = Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [color.withOpacity(0.2), Colors.transparent]).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawPath(fillPath, fillPaint);
     canvas.drawPath(path, paint);
   }
-
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
