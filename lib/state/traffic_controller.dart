@@ -101,18 +101,25 @@ class TrafficController extends ChangeNotifier {
   }
 
   void _addRandomWireIntelligence() {
-    final sources = ['Weather AI', 'Traffic Feed', 'Emergency Services', 'Public Reports', 'Anakin Wire'];
+    final sources = [
+      'Weather AI',
+      'Traffic Feed',
+      'Emergency Services',
+      'Public Reports',
+      'Anakin Wire',
+    ];
     final types = ['weather', 'traffic', 'emergency', 'alert', 'system'];
     final risks = ['Low', 'Moderate', 'High', 'Critical'];
-    
+
     final newIntel = WireIntelligence(
       source: sources[_random.nextInt(sources.length)],
       timestamp: 'Just now',
       riskLevel: risks[_random.nextInt(risks.length)],
-      message: 'Wire detected ${['road closure', 'weather alert', 'heavy traffic', 'accident'][_random.nextInt(4)]}',
+      message:
+          'Wire detected ${['road closure', 'weather alert', 'heavy traffic', 'accident'][_random.nextInt(4)]}',
       type: types[_random.nextInt(types.length)],
     );
-    
+
     wireIntelligence = [newIntel, ...wireIntelligence].take(10).toList();
     _prependEvent('Now', newIntel.message, 'wire');
   }
@@ -174,6 +181,31 @@ class TrafficController extends ChangeNotifier {
     }
   }
 
+  void simulateCongestionSpike() {
+    aiConfidence = 96;
+    aiPrediction = 'Critical congestion detected near Metro Junction.';
+    aiAction = 'Extend green cycle +12s and reroute eastbound flow';
+    signals = signals.map((signal) {
+      final isTarget =
+          signal.name == 'Metro Junction' || signal.name == 'Tech Park';
+      return TrafficSignal(
+        id: signal.id,
+        name: signal.name,
+        load: isTarget ? 92 : signal.load,
+        mode: isTarget ? SignalMode.red : signal.mode,
+      );
+    }).toList();
+    _prependAlert(
+      'Congestion Spike',
+      'Metro Junction risk raised to HIGH. AI recommends +12s green cycle.',
+      2,
+    );
+    _prependEvent('Now', 'AI detected heavy congestion', 'ai');
+    _prependEvent('Now', 'SIG-03 optimized +12 seconds', 'signal');
+    _addRandomWireIntelligence();
+    notifyListeners();
+  }
+
   void deactivateEmergencyMode() {
     emergencyActive = false;
     activationStage = EmergencyActivationStage.none;
@@ -222,7 +254,12 @@ class TrafficController extends ChangeNotifier {
           payload['ambulance'] as String? ??
           'A-204',
       destination: payload['destination'] as String? ?? 'City General Hospital',
-      route: const ['Tech Park', 'Civic Center', 'Metro Junction', 'Hospital Road'],
+      route: const [
+        'Tech Park',
+        'Civic Center',
+        'Metro Junction',
+        'Hospital Road',
+      ],
       etaSeconds: etaAfterMinutes * 60,
       timeSavedSeconds: (payload['timeSaved'] as int? ?? 4) * 60,
       active: true,
@@ -251,11 +288,7 @@ class TrafficController extends ChangeNotifier {
       3,
     );
     _prependEvent('Now', 'Green Corridor activated', 'green_corridor');
-    _prependEvent(
-      'Now',
-      'Ambulance entered corridor',
-      'emergency',
-    );
+    _prependEvent('Now', 'Ambulance entered corridor', 'emergency');
     _prependEvent(
       'Now',
       'ETA reduced by ${etaBeforeMinutes - etaAfterMinutes} minutes',
@@ -271,15 +304,25 @@ class TrafficController extends ChangeNotifier {
     _applyAnalytics(apiService.demoAnalytics());
     _applyEvents(apiService.demoEvents());
     _applyPrediction(apiService.demoPrediction());
-    
+
     // Override signal names with real city names
-    final cityNames = ['Civic Center', 'Hospital Road', 'Metro Junction', 'Tech Park', 'Bridge Way', 'South Park'];
-    signals = List.generate(cityNames.length, (i) => TrafficSignal(
-      id: 'SIG-0${i+1}',
-      name: cityNames[i],
-      load: 30 + _random.nextInt(40),
-      mode: SignalMode.green,
-    ));
+    final cityNames = [
+      'Civic Center',
+      'Hospital Road',
+      'Metro Junction',
+      'Tech Park',
+      'Bridge Way',
+      'South Park',
+    ];
+    signals = List.generate(
+      cityNames.length,
+      (i) => TrafficSignal(
+        id: 'SIG-0${i + 1}',
+        name: cityNames[i],
+        load: 30 + _random.nextInt(40),
+        mode: SignalMode.green,
+      ),
+    );
 
     wireIntelligence = [
       const WireIntelligence(
@@ -297,7 +340,7 @@ class TrafficController extends ChangeNotifier {
         type: 'weather',
       ),
     ];
-    
+
     notifyListeners();
   }
 
@@ -311,13 +354,22 @@ class TrafficController extends ChangeNotifier {
   }
 
   void _applySignals(List<dynamic> rows) {
-    final cityNames = ['Civic Center', 'Hospital Road', 'Metro Junction', 'Tech Park', 'Bridge Way', 'South Park'];
+    final cityNames = [
+      'Civic Center',
+      'Hospital Road',
+      'Metro Junction',
+      'Tech Park',
+      'Bridge Way',
+      'South Park',
+    ];
     signals = rows.asMap().entries.map((entry) {
       final index = entry.key;
       final map = entry.value as Map<String, dynamic>;
       return TrafficSignal(
         id: map['id'] as String,
-        name: index < cityNames.length ? cityNames[index] : map['name'] as String,
+        name: index < cityNames.length
+            ? cityNames[index]
+            : map['name'] as String,
         load: map['traffic_load'] as int,
         mode: _signalMode(map['status'] as String),
       );
@@ -361,7 +413,9 @@ class TrafficController extends ChangeNotifier {
     prediction = payload;
     aiPrediction =
         'Heavy congestion likely near ${payload['zone'] ?? 'Civic Center'} within 18 minutes.';
-    aiAction = payload['recommendedAction'] as String? ?? 'Extend green signal by 12 seconds';
+    aiAction =
+        payload['recommendedAction'] as String? ??
+        'Extend green signal by 12 seconds';
     aiConfidence = payload['confidence'] as int? ?? aiConfidence;
   }
 

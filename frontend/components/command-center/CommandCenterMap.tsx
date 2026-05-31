@@ -176,16 +176,37 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
           );
         })}
 
-        {/* moving emergency vehicle marker */}
-        {isEmergency && L && Marker && vehiclePosition && (
+        {L && Marker && (
           <Marker
-            key={`veh-anim`}
-            position={vehiclePosition}
+            key="hospital-marker"
+            position={greenCorridorRoute[greenCorridorRoute.length - 1]}
             icon={L.divIcon({
               className: '',
-              html: `<div class="route-pulse" style="width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,#39FF88,#00E5FF);box-shadow:0 0 28px rgba(57,255,136,0.55);border:2px solid rgba(255,255,255,0.25);display:grid;place-items:center;font-size:18px">🚑</div>`
+              html: `<div style="padding:6px 8px;border-radius:8px;background:rgba(0,229,255,.14);border:1px solid rgba(0,229,255,.35);box-shadow:0 0 18px rgba(0,229,255,.24);font-size:17px">🏥</div>`
             })}
-          />
+          >
+            <Tooltip permanent direction="left" offset={[-8, 0]}>
+              <div className="px-2 py-1 text-[8px] font-black uppercase tracking-widest">City General</div>
+            </Tooltip>
+          </Marker>
+        )}
+
+        {/* moving emergency vehicle marker */}
+        {L && Marker && (
+          <Marker
+            key={`veh-anim-${isEmergency ? "active" : "standby"}`}
+            position={isEmergency && vehiclePosition ? vehiclePosition : greenCorridorRoute[0]}
+            icon={L.divIcon({
+              className: '',
+              html: `<div class="${isEmergency ? "route-pulse" : ""}" style="width:34px;height:34px;border-radius:12px;background:${isEmergency ? "linear-gradient(135deg,#39FF88,#00E5FF)" : "rgba(255,77,77,.22)"};box-shadow:0 0 28px ${isEmergency ? "rgba(57,255,136,0.55)" : "rgba(255,77,77,0.22)"};border:2px solid rgba(255,255,255,0.25);display:grid;place-items:center;font-size:18px">🚑</div>`
+            })}
+          >
+            <Tooltip permanent direction="right" offset={[16, 0]}>
+              <div className="px-2 py-1 text-[8px] font-black uppercase tracking-widest">
+                {isEmergency ? "A-204 En Route" : "A-204 Standby"}
+              </div>
+            </Tooltip>
+          </Marker>
         )}
 
           {isEmergency && (

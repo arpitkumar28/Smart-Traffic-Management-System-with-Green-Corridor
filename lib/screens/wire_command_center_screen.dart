@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/traffic_models.dart';
 import '../state/traffic_controller.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/neon_background.dart';
@@ -10,7 +11,7 @@ class WireCommandCenterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<TrafficController>();
-    
+
     return Scaffold(
       body: NeonBackground(
         child: SafeArea(
@@ -65,7 +66,9 @@ class WireCommandCenterScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                     _sectionHeader('LATEST INTELLIGENCE'),
                     const SizedBox(height: 12),
-                    ...controller.wireIntelligence.map((intel) => _intelCard(intel)),
+                    ...controller.wireIntelligence.map(
+                      (intel) => _intelCard(intel),
+                    ),
                     const SizedBox(height: 24),
                     _sectionHeader('AI ACTIONS TRIGGERED'),
                     const SizedBox(height: 12),
@@ -99,11 +102,16 @@ class WireCommandCenterScreen extends StatelessWidget {
                                 children: [
                                   Text(
                                     'Intelligence Processing Core',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   Text(
                                     '98.4% Accuracy Rate • Latency 14ms',
-                                    style: TextStyle(fontSize: 10, color: Colors.white54),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.white54,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -141,10 +149,14 @@ class WireCommandCenterScreen extends StatelessWidget {
       margin: const EdgeInsets.only(right: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: active ? const Color(0xFF18F2FF).withOpacity(0.1) : Colors.white10,
+        color: active
+            ? const Color(0xFF18F2FF).withOpacity(0.1)
+            : Colors.white10,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: active ? const Color(0xFF18F2FF).withOpacity(0.5) : Colors.white10,
+          color: active
+              ? const Color(0xFF18F2FF).withOpacity(0.5)
+              : Colors.white10,
         ),
       ),
       child: Row(
@@ -171,7 +183,7 @@ class WireCommandCenterScreen extends StatelessWidget {
     );
   }
 
-  Widget _intelCard(intel) {
+  Widget _intelCard(WireIntelligence intel) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: GlassCard(
@@ -200,7 +212,10 @@ class WireCommandCenterScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 intel.message,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 12),
               Row(
@@ -214,15 +229,21 @@ class WireCommandCenterScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: intel.riskLevel == 'High' || intel.riskLevel == 'Critical' 
-                          ? Colors.redAccent 
+                      color:
+                          intel.riskLevel == 'High' ||
+                              intel.riskLevel == 'Critical'
+                          ? Colors.redAccent
                           : Colors.greenAccent,
                     ),
                   ),
                   const Spacer(),
                   const Text(
                     'Powered by Anakin Wire',
-                    style: TextStyle(fontSize: 8, color: Colors.white24, fontStyle: FontStyle.italic),
+                    style: TextStyle(
+                      fontSize: 8,
+                      color: Colors.white24,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ],
               ),
@@ -239,9 +260,19 @@ class WireCommandCenterScreen extends StatelessWidget {
       child: GlassCard(
         child: ListTile(
           leading: Icon(icon, color: const Color(0xFF8CFF5A), size: 20),
-          title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-          subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.white54)),
-          trailing: const Icon(Icons.check_circle, color: Color(0xFF8CFF5A), size: 16),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: const TextStyle(fontSize: 12, color: Colors.white54),
+          ),
+          trailing: const Icon(
+            Icons.check_circle,
+            color: Color(0xFF8CFF5A),
+            size: 16,
+          ),
         ),
       ),
     );
