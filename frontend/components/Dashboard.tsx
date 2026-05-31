@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Ambulance, Bell, Cpu, MapPinned, RadioTower, Route, Zap, AlertCircle, RotateCw, TrendingUp, ShieldCheck, Clock, Leaf, ArrowRight, Sparkles } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, BarChart, Bar, Cell } from "recharts";
 import { Button, Card } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import {
   fetchDashboardMetrics,
   fetchSignals,
