@@ -66,9 +66,10 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
             pathOptions={{ 
               color: "#00FF88", 
               weight: 6, 
-              opacity: 0.8,
-              dashArray: "1, 12",
-              lineCap: "round"
+              opacity: 0.95,
+              dashArray: "8, 8",
+              lineCap: "round",
+              className: "green-route"
             }}
           />
         )}
@@ -103,19 +104,19 @@ export function CommandCenterMap({ isEmergency }: MapProps) {
           );
         })}
 
-        {isEmergency && (
-           <CircleMarker
+          {isEmergency && (
+            <CircleMarker
              center={greenCorridorRoute[0]}
-             pathOptions={{ color: '#00FF88', fillColor: '#00FF88', fillOpacity: 1, weight: 2 }}
-             radius={10}
-           >
+             pathOptions={{ color: '#00FF88', fillColor: '#00FF88', fillOpacity: 1, weight: 2, className: 'route-pulse' }}
+             radius={12}
+            >
               <Tooltip permanent direction="right" offset={[15, 0]}>
-                 <div className="bg-danger px-2 py-1 rounded text-[8px] font-black text-white uppercase tracking-tighter">
-                    AMB-UNIT-7
-                 </div>
+                <div className="bg-danger px-2 py-1 rounded text-[8px] font-black text-white uppercase tracking-tighter">
+                  AMB-UNIT-7
+                </div>
               </Tooltip>
-           </CircleMarker>
-        )}
+            </CircleMarker>
+          )}
         
         <ZoomControl position="bottomright" />
       </MapContainer>

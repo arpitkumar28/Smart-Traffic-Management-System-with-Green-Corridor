@@ -9,6 +9,20 @@
   color-scheme: dark;
 }
 
+/* Design tokens (palette) */
+:root {
+  --bg: #050B12;
+  --bg-secondary: #07171B;
+  --card-bg: #0D1B24;
+  --border: rgba(0,229,255,0.15);
+  --primary: #00E5FF;
+  --success: #00FF88;
+  --warning: #FFC857;
+  --danger: #FF5252;
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.65);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -37,7 +51,8 @@ body {
 
 .glow-card:hover {
   border: 1px solid rgba(0, 229, 255, 0.4);
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.12), 0 8px 24px rgba(0,0,0,0.6);
+  transform: translateY(-6px);
 }
 
 .emergency-mode-active {
@@ -71,6 +86,27 @@ body {
   background-size: 40px 40px;
   animation: warning-strip 1s linear infinite;
 }
+
+/* Animated green corridor route */
+@keyframes dash {
+  to { stroke-dashoffset: -24; }
+}
+.green-route {
+  stroke-linecap: round;
+  stroke-dasharray: 8 8;
+  animation: dash 1.5s linear infinite;
+}
+
+/* Pulsing ambulance marker */
+@keyframes pulse-amber {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+.route-pulse { animation: pulse-amber 1.6s infinite; }
+
+/* Small utility for subtle neon text */
+.neon-text { text-shadow: 0 0 8px rgba(0,229,255,0.12); }
 
 /* Custom Leaflet overrides for dark mode theme */
 .leaflet-container {
