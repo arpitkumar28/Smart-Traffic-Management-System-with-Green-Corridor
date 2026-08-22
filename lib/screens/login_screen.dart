@@ -30,9 +30,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              const Center(
-                child: Text(
-                  'GREENFLOW AI',
+                const Center(
+                  child: Text(
+                    'GREENFLOW',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w900,
@@ -57,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // Product Features "Landing Page" style
               const _FeatureItem(
                 icon: Icons.auto_graph,
-                title: 'AI Traffic Prediction',
+                title: 'Traffic Prediction',
                 desc: 'Real-time congestion forecasting with 94% confidence.',
               ),
               const _FeatureItem(

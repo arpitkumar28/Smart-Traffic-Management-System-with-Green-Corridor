@@ -70,7 +70,7 @@ class WireCommandCenterScreen extends StatelessWidget {
                       (intel) => _intelCard(intel),
                     ),
                     const SizedBox(height: 24),
-                    _sectionHeader('AI ACTIONS TRIGGERED'),
+                    _sectionHeader('ENGINE ACTIONS TRIGGERED'),
                     const SizedBox(height: 12),
                     _actionCard(
                       'Signal Optimization',

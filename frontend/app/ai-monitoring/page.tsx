@@ -7,7 +7,7 @@ export default function AiMonitoringPage() {
   return (
     <Shell>
       <div className="mx-auto max-w-7xl space-y-6 py-6">
-        <h1 className="text-4xl font-black">AI Monitoring</h1>
+        <h1 className="text-4xl font-black">Traffic Insights Monitoring</h1>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {modules.map((module) => (
             <Card key={module}>

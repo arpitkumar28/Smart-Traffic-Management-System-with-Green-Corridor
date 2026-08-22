@@ -1,23 +1,6 @@
+"use client";
+import { useState } from "react";
 import { Shell } from "@/components/Shell";
-import { Card } from "@/components/ui";
-
-export default function SettingsPage() {
-  return (
-    <Shell>
-      <div className="mx-auto max-w-5xl space-y-6 py-6">
-        <h1 className="text-4xl font-black">Settings</h1>
-        <Card>
-          <h2 className="text-xl font-bold">System Configuration</h2>
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {["Eco traffic mode", "Manual override", "Emergency auto-priority", "Citizen alerts"].map((item) => (
-              <label key={item} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4">
-                <span>{item}</span>
-                <input type="checkbox" defaultChecked className="h-5 w-5 accent-lime" />
-              </label>
-            ))}
-          </div>
-        </Card>
-      </div>
-    </Shell>
-  );
-}
+import { PageHeader,Panel,StatusBadge } from "@/components/operations";
+const options=["Adaptive traffic mode","Operator confirmation for overrides","Priority corridor authorization","Infrastructure health alerts"];
+export default function SettingsPage(){const[enabled,setEnabled]=useState(options.map(()=>true));return <Shell><main className="ops-page"><PageHeader index="11" title="System configuration" subtitle="GreenFlow traffic infrastructure and orchestration preferences"/><Panel title="Operational safeguards" subtitle="Settings are local UI preferences until persisted by a configuration service">{options.map((option,index)=><label key={option} className="ops-list-item" style={{cursor:"pointer",marginBottom:7}}><div><h3>{option}</h3><p>Demo setting. Connect a backend configuration endpoint to persist this preference.</p></div><span><StatusBadge tone={enabled[index]?"green":"plain"}>{enabled[index]?"Enabled":"Disabled"}</StatusBadge><input aria-label={option} type="checkbox" checked={enabled[index]} onChange={()=>setEnabled(current=>current.map((item,i)=>i===index?!item:item))} style={{marginLeft:10,accentColor:"#31d77b"}}/></span></label>)}</Panel></main></Shell>}

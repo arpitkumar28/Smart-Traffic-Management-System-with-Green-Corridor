@@ -1,147 +1,28 @@
 @import "leaflet/dist/leaflet.css";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
-}
+* { box-sizing: border-box; }
 
-/* Design tokens (palette) */
-:root {
-  --bg: #030712;
-  --bg-secondary: #071A24;
-  --card-bg: #071A24;
-  --border: rgba(0,229,255,0.15);
-  --primary: #00E5FF;
-  --success: #39FF88;
-  --warning: #FFC857;
-  --danger: #FF4D4D;
-  --text-primary: #FFFFFF;
-  --text-secondary: rgba(255,255,255,0.65);
-}
-
-* {
-  box-sizing: border-box;
-}
-
+html,body { height: 100%; }
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #030712;
-  color: #FFFFFF;
-  font-family: 'Inter', sans-serif;
-  overflow-x: hidden;
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, 'Helvetica Neue', Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 
-.bg-grid-pattern {
-  background-image: 
-    linear-gradient(to right, rgba(0, 229, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
+/* Subtle grid texture */
+.bg-grid-pattern { background-image: linear-gradient(to right, rgba(255,255,255,0.01) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.01) 1px, transparent 1px); background-size: 40px 40px; }
 
-.glow-card {
-  background: rgba(7, 26, 36, 0.85);
-  border: 1px solid rgba(0, 229, 255, 0.15);
-  backdrop-filter: blur(20px);
-  transition: all 0.3s ease;
-  box-shadow: 0 0 25px rgba(0,229,255,0.08);
-}
+/* Map & leaflet tweaks */
+.leaflet-container { background: #03110F !important; border-radius: 12px; }
+.leaflet-tooltip { background: rgba(3,17,15,0.9) !important; color: #F1F5F2 !important; border: 1px solid rgba(255,255,255,0.08) !important; }
 
-.glow-card:hover {
-  border: 1px solid rgba(0, 229, 255, 0.4);
-  box-shadow: 0 0 30px rgba(0, 229, 255, 0.12), 0 8px 24px rgba(0,0,0,0.6);
-  transform: translateY(-6px);
-}
+/* Accessibility helpers */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
-.emergency-mode-active {
-  border: 2px solid #FF5252 !important;
-  box-shadow: inset 0 0 50px rgba(255, 82, 82, 0.2), 0 0 30px rgba(255, 82, 82, 0.3) !important;
-}
-
-@keyframes pulse-red {
-  0% { transform: scale(0.95); opacity: 0.5; }
-  50% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(0.95); opacity: 0.5; }
-}
-
-.emergency-pulse {
-  animation: pulse-red 2s infinite;
-}
-
-@keyframes warning-strip {
-  0% { background-position: 0 0; }
-  100% { background-position: 40px 0; }
-}
-
-.warning-bar {
-  background: repeating-linear-gradient(
-    45deg,
-    #FF5252,
-    #FF5252 10px,
-    #050B12 10px,
-    #050B12 20px
-  );
-  background-size: 40px 40px;
-  animation: warning-strip 1s linear infinite;
-}
-
-/* Animated green corridor route */
-@keyframes dash {
-  to { stroke-dashoffset: -24; }
-}
-.green-route {
-  stroke-linecap: round;
-  stroke-dasharray: 8 8;
-  animation: dash 1.5s linear infinite;
-}
-
-/* Pulsing ambulance marker */
-@keyframes pulse-amber {
-  0% { transform: scale(0.9); opacity: 0.8; }
-  50% { transform: scale(1.15); opacity: 1; }
-  100% { transform: scale(0.9); opacity: 0.8; }
-}
-.route-pulse { animation: pulse-amber 1.6s infinite; }
-
-/* Small utility for subtle neon text */
-.neon-text { text-shadow: 0 0 8px rgba(0,229,255,0.12); }
-
-/* Custom Leaflet overrides for dark mode theme */
-.leaflet-container {
-  background: #030712 !important;
-}
-
-.leaflet-tile-pane {
-  filter: brightness(0.85) contrast(1.08) saturate(1.08);
-}
-
-.leaflet-tooltip {
-  border: 1px solid rgba(0, 229, 255, 0.18) !important;
-  background: rgba(3, 7, 18, 0.86) !important;
-  color: #fff !important;
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.12) !important;
-}
-
-.leaflet-tooltip::before {
-  display: none;
-}
-
-@keyframes marker-glow {
-  0%, 100% { transform: scale(0.92); opacity: 0.55; }
-  50% { transform: scale(1.18); opacity: 1; }
-}
-
-.signal-dot {
-  animation: marker-glow 1.8s ease-in-out infinite;
-}
-
-.mission-shell {
-  background:
-    radial-gradient(circle at 22% 0%, rgba(0, 229, 255, 0.12), transparent 28%),
-    radial-gradient(circle at 86% 12%, rgba(57, 255, 136, 0.10), transparent 24%),
-    linear-gradient(135deg, #030712 0%, #06111a 45%, #030712 100%);
-}

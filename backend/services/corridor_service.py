@@ -67,6 +67,7 @@ async def activate_green_corridor(ambulance_id: str, destination: str) -> dict[s
     }
     
     await manager.broadcast("GREEN_CORRIDOR_ACTIVATED", response)
+    await manager.broadcast("event_update", {"event": event})
     await manager.broadcast("SIGNAL_UPDATE", {"signals": demo_store.signals})
     await manager.broadcast("ALERT_UPDATE", {"alerts": demo_store.alerts})
     await manager.broadcast("ANALYTICS_UPDATE", demo_store.analytics)

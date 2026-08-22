@@ -102,7 +102,7 @@ class TrafficController extends ChangeNotifier {
 
   void _addRandomWireIntelligence() {
     final sources = [
-      'Weather AI',
+      'Weather Monitor',
       'Traffic Feed',
       'Emergency Services',
       'Public Reports',
@@ -153,7 +153,7 @@ class TrafficController extends ChangeNotifier {
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 500));
     activationStage = EmergencyActivationStage.optimizing;
-    _prependEvent('Now', 'AI recalculated traffic flow', 'ai');
+    _prependEvent('Now', 'Decision Engine recalculated traffic flow', 'ai');
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 500));
     activationStage = EmergencyActivationStage.synchronizing;
@@ -197,10 +197,10 @@ class TrafficController extends ChangeNotifier {
     }).toList();
     _prependAlert(
       'Congestion Spike',
-      'Metro Junction risk raised to HIGH. AI recommends +12s green cycle.',
+      'Metro Junction risk raised to HIGH. Engine recommends +12s green cycle.',
       2,
     );
-    _prependEvent('Now', 'AI detected heavy congestion', 'ai');
+    _prependEvent('Now', 'Engine detected heavy congestion', 'ai');
     _prependEvent('Now', 'SIG-03 optimized +12 seconds', 'signal');
     _addRandomWireIntelligence();
     notifyListeners();
@@ -333,7 +333,7 @@ class TrafficController extends ChangeNotifier {
         type: 'traffic',
       ),
       const WireIntelligence(
-        source: 'Weather AI',
+        source: 'Weather Monitor',
         timestamp: '5m ago',
         riskLevel: 'Moderate',
         message: 'Heavy rain expected near Civic Center',
@@ -391,14 +391,17 @@ class TrafficController extends ChangeNotifier {
   }
 
   void _applyAnalytics(Map<String, dynamic> payload) {
+    int numberValue(Object? value, int fallback) =>
+      value is num ? value.round() : fallback;
+
     analytics = {
-      'efficiency': payload['efficiency'] as int? ?? 84,
-      'response_time': payload['response_time'] as int? ?? 38,
-      'co2_reduction': payload['co2_reduction'] as int? ?? 18,
+      'efficiency': numberValue(payload['efficiency'], 84),
+      'response_time': numberValue(payload['response_time'], 38),
+      'co2_reduction': numberValue(payload['co2_reduction'], 18),
       'emergencyVehiclesAssisted':
-          payload['emergencyVehiclesAssisted'] as int? ?? 127,
-      'hoursSaved': payload['hoursSaved'] as int? ?? 42,
-      'trafficJamsPrevented': payload['trafficJamsPrevented'] as int? ?? 32,
+        numberValue(payload['emergencyVehiclesAssisted'], 127),
+      'hoursSaved': numberValue(payload['hoursSaved'], 42),
+      'trafficJamsPrevented': numberValue(payload['trafficJamsPrevented'], 32),
     };
   }
 

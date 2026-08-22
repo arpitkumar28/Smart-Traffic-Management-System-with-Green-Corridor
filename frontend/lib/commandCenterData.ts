@@ -3,7 +3,7 @@ export type DashboardTone = "lime" | "cyan" | "amber";
 export type MapCoordinate = [number, number];
 
 export const commandCenterBrand = {
-  title: "GreenFlow AI Command Center",
+  title: "GREENFLOW Command Center",
   subtitle: "Smart City operations for traffic, emergency routing, and wire intelligence.",
   status: "Optimal",
   activeEmergencies: 3,
@@ -70,7 +70,7 @@ export const emergencyStatus = [
 export const wireFeed = [
   {
     time: "Just now",
-    headline: "Anakin AI flagged an obstructions cluster on East Bay Blvd.",
+    headline: "Anakin flagged an obstructions cluster on East Bay Blvd.",
     level: "Alert",
   },
   {
@@ -98,7 +98,7 @@ export const weatherAlerts = [
 export const intelligenceAlerts = [
   { label: "Grid Pressure", value: "Stable" },
   { label: "Priority Drift", value: "0.9%" },
-  { label: "AI Confidence", value: "97%" },
+  { label: "Decision Confidence", value: "97%" },
 ];
 
 export const riskLevels = [
@@ -110,7 +110,7 @@ export const riskLevels = [
 
 export const timelineEvents = [
   { time: "08:52", event: "Green corridor confirmed for Trauma Unit dispatch." },
-  { time: "08:49", event: "AI reduced congestion load on Metro Spine by 12%." },
+  { time: "08:49", event: "Decision Engine reduced congestion load on Metro Spine by 12%." },
   { time: "08:45", event: "Anakin wire feed synced 9 cameras with emergency control." },
   { time: "08:42", event: "Weather alert issued for East Bay drizzle." },
 ];

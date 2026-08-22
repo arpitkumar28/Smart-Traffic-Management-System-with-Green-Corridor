@@ -5,9 +5,7 @@ export const wsUrl = process.env.NEXT_PUBLIC_WS_URL ?? "wss://smart-traffic-mana
 
 export const api = axios.create({ baseURL: apiUrl, timeout: 10000 });
 
-// ============================================================================
-// TYPES
-// ============================================================================
+export type SignalStatus = "green" | "yellow" | "red" | "priority" | "green_corridor" | string;
 
 export interface DashboardMetrics {
   trafficFlow: number;
@@ -15,13 +13,13 @@ export interface DashboardMetrics {
   avgWait: number;
   activeSignals: number;
   emergencyVehiclesActive: number;
-  aiPredictionConfidence: number;
+  aiPredictionConfidence?: number;
 }
 
 export interface Signal {
   id: string;
   name: string;
-  status: "green" | "yellow" | "red" | "priority";
+  status: SignalStatus;
   traffic_load: number;
   lat: number;
   lng: number;
@@ -29,7 +27,7 @@ export interface Signal {
 
 export interface EmergencyVehicle {
   id: string;
-  type: "ambulance" | "fire_brigade";
+  type: "ambulance" | "fire_brigade" | string;
   lat: number;
   lng: number;
   destination?: string;
@@ -45,13 +43,12 @@ export interface Alert {
 }
 
 export interface TrafficEvent {
-  id: number;
+  id: number | string;
   event?: string;
   message?: string;
   timestamp?: string;
   created_at?: string;
   type?: string;
-  /** Optional location or zone identifier for the event */
   location?: string;
 }
 
@@ -62,24 +59,61 @@ export interface AnalyticsData {
 }
 
 export interface GreenCorridorResponse {
-  status: string;
-  type: string;
-  ambulance: string;
-  vehicleId: string;
-  destination: string;
-  etaBefore: number;
-  etaAfter: number;
-  timeSaved: number;
-  signalsOptimized: number;
+  status?: string;
+  type?: string;
+  ambulance?: string;
+  vehicleId?: string;
+  destination?: string;
+  etaBefore?: number;
+  etaAfter?: number;
+  timeSaved?: number;
+  signalsOptimized?: number;
   signalsSynced?: number;
-  route: string[];
+  route?: string[];
   route_coords?: [number, number][];
   priorityScore?: number;
 }
 
-// ============================================================================
-// ERROR HANDLING
-// ============================================================================
+export interface AIRecommendation {
+  zone: string;
+  risk: string;
+  confidence: number;
+  currentTraffic?: string;
+  predictedTraffic?: string;
+  recommendedAction: string;
+}
+
+export interface WebSocketMessage<T = unknown> {
+  type: string;
+  payload: T;
+}
+
+export type NormalizedEventType =
+  | "signal.update"
+  | "corridor.activated"
+  | "corridor.completed"
+  | "vehicle.update"
+  | "analytics.update"
+  | "event.created"
+  | "alert.update"
+  | "unknown"
+  | string;
+
+export function normalizeWebSocketEventType(raw: string | undefined): NormalizedEventType {
+  const input = (raw ?? "").trim();
+  if (!input) return "unknown";
+
+  const normalized = input.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+
+  if (normalized.includes("signal")) return "signal.update";
+  if (normalized.includes("green_corridor") || normalized.includes("corridor")) return "corridor.activated";
+  if (normalized.includes("alert")) return "alert.update";
+  if (normalized.includes("analytics")) return "analytics.update";
+  if (normalized.includes("vehicle") || normalized.includes("ambulance")) return "vehicle.update";
+  if (normalized.includes("event")) return "event.created";
+
+  return normalized as NormalizedEventType;
+}
 
 class APIError extends Error {
   constructor(
@@ -94,186 +128,93 @@ class APIError extends Error {
 
 export function handleApiError(error: unknown): APIError {
   if (axios.isAxiosError(error)) {
-    const statusCode = error.response?.status || 500;
+    const statusCode = error.response?.status ?? 500;
     const message =
-      error.response?.data?.detail ||
-      error.message ||
-      "An error occurred while fetching data";
+      (typeof error.response?.data === "object" && error.response?.data !== null && "detail" in error.response.data
+        ? String((error.response.data as { detail?: string }).detail ?? error.message)
+        : error.message) || "An error occurred while fetching data";
     return new APIError(statusCode, message, error);
   }
-  return new APIError(500, String(error));
+  return new APIError(500, error instanceof Error ? error.message : String(error));
 }
-
-// ============================================================================
-// DASHBOARD
-// ============================================================================
 
 export async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
-  try {
-    const { data } = await api.get<DashboardMetrics>("/dashboard");
-    return data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
+  const { data } = await api.get<DashboardMetrics>("/dashboard");
+  return data;
 }
-
-// ============================================================================
-// SIGNALS
-// ============================================================================
 
 export async function fetchSignals(): Promise<Signal[]> {
-  try {
-    const { data } = await api.get<Signal[]>("/signals");
-    return data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
+  const { data } = await api.get<Signal[]>("/signals");
+  return data;
 }
 
-export async function updateSignalState(
-  signalId: string,
-  status: string
-): Promise<Signal> {
-  try {
-    const { data } = await api.post<Signal>(
-      `/signals/${signalId}/state`,
-      { status }
-    );
-    return data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
+export async function updateSignalState(signalId: string, status: string): Promise<Signal> {
+  // FastAPI exposes `status` as a query parameter, not a JSON request body.
+  const { data } = await api.post<Signal>(`/signals/${signalId}/state`, undefined, { params: { status } });
+  return data;
 }
-
-// ============================================================================
-// ALERTS
-// ============================================================================
 
 export async function fetchAlerts(): Promise<Alert[]> {
-  try {
-    const { data } = await api.get<Alert[]>("/alerts");
-    return data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
+  const { data } = await api.get<Alert[]>("/alerts");
+  return data;
 }
 
-export async function createAlert(
-  title: string,
-  description: string
-): Promise<Alert> {
-  try {
-    const { data } = await api.post<Alert>("/alerts", { title, description });
-    return data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
+export async function createAlert(title: string, description: string): Promise<Alert> {
+  const { data } = await api.post<Alert>("/alerts", { title, description });
+  return data;
 }
 
-// ============================================================================
-// ANALYTICS
-// ============================================================================
-
-export async function fetchAnalytics(): Promise<Record<string, unknown>> {
-  try {
-    const { data } = await api.get<Record<string, unknown>>("/analytics");
-    return data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
+export async function fetchAnalytics(): Promise<Record<string, number | string>> {
+  const { data } = await api.get<Record<string, number | string>>("/analytics");
+  return data;
 }
-
-// ============================================================================
-// EVENTS
-// ============================================================================
 
 export async function fetchEvents(): Promise<TrafficEvent[]> {
-  try {
-    const { data } = await api.get<TrafficEvent[]>("/events");
-    return data.map((event) => ({
-      ...event,
-      event: event.event ?? event.message ?? "Realtime city event",
-      timestamp: event.timestamp ?? event.created_at ?? "live",
-      location: event.location ?? event.type ?? "ZONE-4",
-    }));
-  } catch (error) {
-    throw handleApiError(error);
-  }
-}
-
-// ============================================================================
-// PREDICTION
-// ============================================================================
-
-export interface AIRecommendation {
-  zone: string;
-  risk: string;
-  confidence: number;
-  currentTraffic?: string;
-  predictedTraffic?: string;
-  recommendedAction: string;
+  const { data } = await api.get<TrafficEvent[]>("/events");
+  return data.map((event) => ({
+    ...event,
+    event: event.event ?? event.message ?? "Realtime city event",
+    timestamp: event.timestamp ?? event.created_at ?? "live",
+    location: event.location ?? event.type ?? "ZONE-4",
+  }));
 }
 
 export async function fetchPrediction(): Promise<AIRecommendation> {
-  try {
-    const { data } = await api.get<AIRecommendation>("/prediction");
-    return data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
+  const { data } = await api.get<AIRecommendation>("/prediction");
+  return data;
 }
 
-// ============================================================================
-// AMBULANCE / EMERGENCY
-// ============================================================================
-
 export async function fetchEmergencyVehicles(): Promise<EmergencyVehicle[]> {
-    try {
-      const { data } = await api.get<EmergencyVehicle[]>("/ambulance");
-      return data;
-    } catch (error) {
-      throw handleApiError(error);
-    }
-  }
+  const { data } = await api.get<EmergencyVehicle[]>("/ambulance");
+  return data;
+}
 
 export async function triggerEmergencyCorridor(
   ambulanceId: string = "AMB-102",
   destination: string = "Hospital Road"
 ): Promise<GreenCorridorResponse> {
-  try {
-    const { data } = await api.post<GreenCorridorResponse>(
-      "/ambulance/activate",
-      {
-        ambulanceId,
-        destination,
-      }
-    );
-    return data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
-}
-
-// ============================================================================
-// WEBSOCKET
-// ============================================================================
-
-export interface WebSocketMessage {
-  type: string;
-  payload: any;
+  const { data } = await api.post<GreenCorridorResponse>("/ambulance/activate", {
+    ambulanceId,
+    destination,
+  });
+  return data;
 }
 
 export function openGreenFlowSocket(
   onMessage: (event: WebSocketMessage) => void,
-  onError?: (error: any) => void,
+  onError?: (error: unknown) => void,
   onClose?: () => void
 ): WebSocket {
   const socket = new WebSocket(wsUrl);
 
   socket.onmessage = (message) => {
     try {
-      const event = JSON.parse(message.data) as WebSocketMessage;
-      onMessage(event);
+      const parsed = JSON.parse(message.data) as WebSocketMessage | { type?: string; payload?: unknown };
+      const normalizedMessage: WebSocketMessage = {
+        type: normalizeWebSocketEventType(parsed?.type ?? ""),
+        payload: parsed?.payload ?? parsed,
+      };
+      onMessage(normalizedMessage);
     } catch (error) {
       console.error("Failed to parse WebSocket message:", error);
     }
@@ -285,16 +226,13 @@ export function openGreenFlowSocket(
   };
 
   socket.onclose = () => {
-    console.log("WebSocket closed");
     onClose?.();
   };
 
   return socket;
 }
 
-// ============================================================================
-// RETRY LOGIC
-// ============================================================================
+export * from "./types";
 
 export async function retryRequest<T>(
   fn: () => Promise<T>,
@@ -303,16 +241,16 @@ export async function retryRequest<T>(
 ): Promise<T> {
   let lastError: Error | undefined;
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
       return await fn();
     } catch (error) {
-      lastError = error as Error;
+      lastError = error instanceof Error ? error : new Error(String(error));
       if (attempt < maxAttempts) {
         await new Promise((resolve) => setTimeout(resolve, delayMs * attempt));
       }
     }
   }
 
-  throw lastError;
+  throw lastError ?? new Error("Request failed");
 }

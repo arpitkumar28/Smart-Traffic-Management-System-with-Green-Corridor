@@ -27,6 +27,6 @@ export const trafficSeries = [
 export const alerts = [
   "Ambulance EV-204 detected near Hospital Link",
   "Green corridor active across 4 intersections",
-  "AI rerouted eastbound traffic to reduce conflict",
+  "Decision Engine rerouted eastbound traffic to reduce conflict",
   "Accident simulation cleared at Tech Park ramp",
 ];

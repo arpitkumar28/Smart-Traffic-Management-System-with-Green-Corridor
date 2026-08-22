@@ -124,7 +124,7 @@ class _DesktopNavbar extends StatelessWidget {
       child: Row(
         children: [
           const Text(
-            'GREENFLOW AI',
+            'GREENFLOW',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w900,
@@ -408,7 +408,7 @@ class _AIDecisionCenter extends StatelessWidget {
             children: [
               Icon(Icons.psychology, color: Color(0xFF00E5FF), size: 20),
               SizedBox(width: 12),
-              Text('AI ENGINE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 12, color: Color(0xFF00E5FF))),
+              Text('DECISION ENGINE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 12, color: Color(0xFF00E5FF))),
             ],
           ),
           const SizedBox(height: 20),
@@ -716,7 +716,7 @@ class _AIRecCard extends StatelessWidget {
             children: [
               const Icon(Icons.psychology, color: Color(0xFF00FF9D), size: 20),
               const SizedBox(width: 10),
-              const Text('AI REASONING', style: TextStyle(color: Color(0xFF00FF9D), fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.0)),
+              const Text('DECISION INSIGHTS', style: TextStyle(color: Color(0xFF00FF9D), fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.0)),
             ],
           ),
           const SizedBox(height: 16),

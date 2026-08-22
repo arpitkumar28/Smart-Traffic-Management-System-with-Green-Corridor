@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from database.supabase import demo_store
@@ -19,4 +19,12 @@ def get_emergency_vehicles() -> list[dict]:
 
 @router.post("/activate")
 async def activate_ambulance(payload: AmbulanceActivation) -> dict:
+    vehicle = next(
+        (item for item in demo_store.ambulances if item["id"] == payload.ambulanceId),
+        None,
+    )
+    if vehicle is None:
+        raise HTTPException(status_code=404, detail=f"Ambulance {payload.ambulanceId} not found")
+    if vehicle["status"] == "Green Corridor Active":
+        raise HTTPException(status_code=409, detail=f"Ambulance {payload.ambulanceId} corridor is already active")
     return await activate_green_corridor(payload.ambulanceId, payload.destination)

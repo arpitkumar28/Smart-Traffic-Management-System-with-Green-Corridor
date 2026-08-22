@@ -1,6 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+from database.supabase import get_supabase
 from routes.alerts import router as alerts_router
 from routes.ambulance import router as ambulance_router
 from routes.analytics import router as analytics_router
@@ -31,7 +32,18 @@ app.include_router(ambulance_router)
 
 @app.get("/")
 def health() -> dict[str, str]:
-    return {"status": "GreenFlow AI API online"}
+    return {"status": "GreenFlow API online"}
+
+
+@app.get("/health")
+def health_check() -> dict[str, str]:
+    return {"status": "online"}
+
+
+@app.get("/status")
+def service_status() -> dict[str, str]:
+    database = "supabase" if get_supabase() is not None else "demo"
+    return {"service": "GreenFlow AI API", "database": database}
 
 
 @app.websocket("/ws")

@@ -126,7 +126,7 @@ class ApiService {
       'title': 'Ambulance detected',
       'description': 'Emergency vehicle A-204 approaching SIG-04',
     },
-    {'title': 'AI Alert', 'description': 'Congestion rising near Tech Park'},
+    {'title': 'Engine Alert', 'description': 'Congestion rising near Tech Park'},
     {'title': 'Signal optimized', 'description': 'SIG-03 optimized'},
   ];
 
@@ -142,7 +142,7 @@ class ApiService {
   List<dynamic> demoEvents() => [
     {
       'created_at': '10:20 PM',
-      'message': 'AI detected congestion',
+      'message': 'Engine detected congestion',
       'type': 'ai',
     },
     {'created_at': '10:21 PM', 'message': 'SIG-03 optimized', 'type': 'signal'},

@@ -83,7 +83,7 @@ class _LiveMapScreenState extends State<LiveMapScreen>
                 ),
               ),
 
-              // AI Reasoning Engine (Hackathon Killer Feature)
+              // Decision Engine (reasoning and prediction)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: _AiReasoningEngine(controller: controller),
@@ -112,7 +112,7 @@ class _LiveMapScreenState extends State<LiveMapScreen>
                       child: Column(
                         children: [
                           _CompactStatTile(
-                            label: 'AI FLOW',
+                            label: 'TRAFFIC FLOW',
                             value: '${controller.networkFlow}%',
                             icon: Icons.auto_graph,
                             color: const Color(0xFF00E5FF),
@@ -366,7 +366,7 @@ class _AiReasoningEngine extends StatelessWidget {
               const Icon(Icons.psychology, color: Color(0xFF00FF9D), size: 20),
               const SizedBox(width: 8),
               const Text(
-                'AI REASONING ENGINE',
+                'DECISION ENGINE',
                 style: TextStyle(
                   color: Color(0xFF00FF9D),
                   fontWeight: FontWeight.w900,
@@ -393,7 +393,7 @@ class _AiReasoningEngine extends StatelessWidget {
             children: [
               _AiMetric(label: 'Target Zone', value: controller.prediction['zone'] ?? 'Civic Center'),
               _AiMetric(label: 'Risk', value: controller.prediction['risk'] ?? 'High'),
-              _AiMetric(label: 'AI Action', value: 'Sync +12s Cycles'),
+              _AiMetric(label: 'Engine Action', value: 'Sync +12s Cycles'),
             ],
           ),
         ],

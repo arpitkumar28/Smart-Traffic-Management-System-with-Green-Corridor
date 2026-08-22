@@ -42,8 +42,8 @@ class _SplashScreenState extends State<SplashScreen> {
             children: [
               Icon(Icons.route, color: Color(0xFF8CFF5A), size: 72),
               SizedBox(height: 18),
-              Text(
-                'GreenFlow AI Mobile',
+                Text(
+                  'GreenFlow Mobile',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
               ),
               SizedBox(height: 8),

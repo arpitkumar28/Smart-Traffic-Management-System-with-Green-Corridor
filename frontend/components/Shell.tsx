@@ -3,30 +3,35 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Activity, Ambulance, BarChart3, Bot, Gauge, Home, Map, RadioTower, Settings, ShieldCheck, Cpu, Wifi, Zap } from "lucide-react";
+import { Activity, Ambulance, BarChart3, Gauge, Map, MapPinned, RadioTower, Route, Settings, ShieldCheck, Cpu, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 const nav = [
-  { href: "/command-center", label: "COMMAND CENTER", icon: Gauge },
-  { href: "/map", label: "LIVE OPERATIONS", icon: Map },
-  { href: "/analytics", label: "AI INTELLIGENCE", icon: BarChart3 },
-  { href: "/wire", label: "WIRE FEED", icon: RadioTower },
-  { href: "/emergency", label: "EMERGENCY CONTROL", icon: Ambulance },
+  { href: "/dashboard", label: "OVERVIEW", icon: Gauge },
+  { href: "/live-operations", label: "LIVE OPERATIONS", icon: Map },
+  { href: "/emergency", label: "EMERGENCY RESPONSE", icon: Ambulance },
+  { href: "/green-corridors", label: "GREEN CORRIDORS", icon: Route },
+  { href: "/signal-sync", label: "SIGNAL SYNC", icon: RadioTower },
+  { href: "/traffic-network", label: "TRAFFIC NETWORK", icon: MapPinned },
+  { href: "/edge-network", label: "IOT TRAFFIC NETWORK", icon: Cpu },
+  { href: "/lane-management", label: "LANE MANAGEMENT", icon: Activity },
+  { href: "/traffic-insights", label: "TRAFFIC INSIGHTS", icon: BarChart3 },
+  { href: "/analytics", label: "ANALYTICS", icon: TrendingUp },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLanding = pathname === "/";
+  const isMapFirst = pathname?.startsWith("/map") || pathname?.startsWith("/command-center");
 
   return (
     <div className="min-h-screen bg-background text-text-primary font-inter flex flex-col">
       {/* TOP STATUS BAR */}
       <header className="min-h-[3.5rem] h-auto py-2 border-b border-border bg-secondary-background/80 backdrop-blur-md flex flex-wrap items-center justify-between px-6 sticky top-0 z-50 gap-4">
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2 mr-4">
+              <Link href="/" className="flex items-center gap-2 mr-4">
               <ShieldCheck className="text-primary" size={24} />
-              <span className="font-black tracking-tighter text-xl">GREENFLOW AI</span>
+              <span className="font-black tracking-tighter text-xl">GREENFLOW</span>
             </Link>
           </div>
 
@@ -37,7 +42,7 @@ export function Shell({ children }: { children: ReactNode }) {
             </div>
             <div className="flex items-center gap-2 text-success bg-success/5 px-2 py-1 rounded-full border border-success/10">
               <span className="w-1.5 h-1.5 rounded-full bg-success" />
-              AI ENGINE ACTIVE
+              DECISION ENGINE
             </div>
             <div className="flex items-center gap-2 text-success bg-success/5 px-2 py-1 rounded-full border border-success/10">
               <span className="w-1.5 h-1.5 rounded-full bg-success" />
@@ -95,7 +100,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
         <main className={cn(
           "flex-1 overflow-auto bg-grid-pattern",
-          isLanding ? "" : "p-6"
+          isLanding ? "" : isMapFirst ? "p-3 lg:p-6" : "p-6"
         )}>
           {children}
         </main>

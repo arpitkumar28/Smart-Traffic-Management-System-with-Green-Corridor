@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { Ambulance, AlertCircle, Siren, TimerReset, RotateCw, ShieldCheck, Activity, Zap, MapPin } from "lucide-react";
 import type { ReactNode } from "react";
 import { Shell } from "@/components/Shell";
-import { Button, Card, cn } from "@/components/ui";
-import { triggerEmergencyCorridor, fetchEvents, openGreenFlowSocket, type GreenCorridorResponse, type TrafficEvent } from "@/lib/api";
+import { Card, cn } from "@/components/ui";
+import { triggerEmergencyCorridor, fetchEvents, openGreenFlowSocket, type TrafficEvent } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function EmergencyPage() {
@@ -31,7 +31,7 @@ export default function EmergencyPage() {
     // Set up WebSocket for real-time events
     const socket = openGreenFlowSocket(
       (message) => {
-        if (message.type === "event_update" || message.type === "event_updates") {
+        if (message.type === "event.created" || message.type === "corridor.activated") {
           const payload = message.payload as { event?: TrafficEvent };
           const event = payload.event ?? (message.payload as TrafficEvent);
           setRecentEvents((prev) => [event, ...prev].slice(0, 5));
@@ -52,7 +52,7 @@ export default function EmergencyPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await triggerEmergencyCorridor("AMB-COMMAND", "City General Hospital");
+      const response = await triggerEmergencyCorridor("AMB-102", "City General Hospital");
       
       setCorridorStatus({
         signalsSynced: response.signalsOptimized ?? response.signalsSynced ?? 18,
@@ -65,7 +65,7 @@ export default function EmergencyPage() {
       // Add a simulation event
       const newEvent: TrafficEvent = {
           id: Date.now(),
-          event: "PRIORITY CORRIDOR ENGAGED: AMB-204",
+          event: "PRIORITY CORRIDOR ENGAGED: AMB-102",
           timestamp: new Date().toLocaleTimeString(),
           location: "ZONE-1",
           type: "emergency"
@@ -108,7 +108,7 @@ export default function EmergencyPage() {
         </AnimatePresence>
 
         <div className="grid gap-8 lg:grid-cols-[1fr_1.5fr]">
-          <Card className="glass-card p-8 border-white/10 relative overflow-hidden group">
+          <Card className="p-8 border-border relative overflow-hidden group rounded-xl backdrop-blur-md">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                 <Siren size={160} />
             </div>
@@ -119,7 +119,7 @@ export default function EmergencyPage() {
                     <span className="text-[10px] font-black tracking-widest text-primary uppercase">Protocol 08: Green Corridor</span>
                 </div>
                 
-                <h2 className="text-3xl font-black text-white mb-4">AI PRIORITY SYSTEM</h2>
+                <h2 className="text-3xl font-black text-white mb-4">EMERGENCY PRIORITY</h2>
                 <p className="text-text-secondary font-medium leading-relaxed mb-8">
                   Synchronizes all traffic nodes along the optimal route for emergency vehicles, creating an unimpeded "green flow" through the city.
                 </p>
@@ -129,10 +129,10 @@ export default function EmergencyPage() {
                         className={cn(
                             "w-full py-5 rounded-2xl flex items-center justify-center gap-3 transition-all font-black text-lg tracking-tight border",
                             loading 
-                                ? "bg-white/5 border-white/10 text-white/40 cursor-not-allowed" 
+                                ? "bg-panel border-border text-text-secondary cursor-not-allowed" 
                                 : corridorStatus 
-                                    ? "bg-danger text-white border-danger shadow-[0_0_30px_rgba(255,77,77,0.4)]"
-                                    : "bg-success text-black border-success shadow-[0_0_25px_rgba(0,255,157,0.3)] hover:scale-[1.02]"
+                                    ? "bg-danger text-white border-danger shadow-[0_0_30px_rgba(233,91,91,0.4)]"
+                                    : "bg-success text-background border-success shadow-[0_0_25px_rgba(49,215,123,0.3)] hover:scale-[1.02]"
                         )} 
                         onClick={handleTriggerCorridor}
                         disabled={loading}
@@ -170,7 +170,7 @@ export default function EmergencyPage() {
               />
             </div>
 
-            <Card className="glass-card p-6 border-white/10">
+            <Card className="p-6 border-border rounded-xl backdrop-blur-md">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xs font-black tracking-widest text-white uppercase">Mission intelligence</h3>
                     <div className="flex items-center gap-2">
@@ -211,8 +211,8 @@ export default function EmergencyPage() {
           </div>
         </div>
 
-        <Card className="glass-card border-white/10 overflow-hidden bg-black/40">
-            <div className="px-6 py-4 border-b border-white/10 bg-white/5 flex items-center justify-between">
+        <Card className="border-border overflow-hidden bg-panel rounded-xl backdrop-blur-md">
+            <div className="px-6 py-4 border-b border-border bg-panel-alt flex items-center justify-between">
                 <h2 className="text-xs font-black tracking-[0.3em] text-white uppercase">Emergency Wire Feed</h2>
                 <span className="text-[9px] font-bold text-text-secondary">SYSTEM LOGS</span>
             </div>
@@ -230,7 +230,7 @@ export default function EmergencyPage() {
                               "group relative flex gap-4 p-4 rounded-xl border transition-all duration-300",
                               isEmergency 
                                 ? "bg-danger/5 border-danger/20 hover:bg-danger/10" 
-                                : "bg-white/5 border-white/5 hover:bg-white/10"
+                                : "bg-panel border-border hover:bg-panel-alt"
                           )}
                         >
                           <div className={cn(
@@ -267,18 +267,25 @@ export default function EmergencyPage() {
 
       <style jsx global>{`
         .glass-card {
-            background: rgba(11, 17, 32, 0.4);
-            backdrop-filter: blur(20px);
-            border-radius: 1.5rem;
+          background: rgba(11, 17, 32, 0.4);
+          backdrop-filter: blur(20px);
+          border-radius: 1.5rem;
         }
-      `}</style>
+        .gf-panel {
+          background: rgba(11, 17, 32, 0.4);
+          -webkit-backdrop-filter: blur(20px);
+          backdrop-filter: blur(20px);
+          border-radius: 1.5rem;
+          border: 1px solid var(--border);
+        }
+        `}</style>
     </Shell>
   );
 }
 
 function Panel({ icon, label, value, color }: { icon: ReactNode; label: string; value: string; color: string }) {
   return (
-    <Card className="glass-card p-6 border-white/5 hover:border-white/10 transition-colors group">
+    <Card className="gf-panel p-6 border-white/5 hover:border-white/10 transition-colors group">
       <div className={cn("mb-4 group-hover:scale-110 transition-transform", color)}>
         {icon}
       </div>

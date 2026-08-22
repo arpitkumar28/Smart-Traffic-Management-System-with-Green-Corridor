@@ -123,7 +123,7 @@ class _EmergencyStandbyView extends StatelessWidget {
               onPressed: () => context.read<TrafficController>().simulateCongestionSpike(),
               icon: const Icon(Icons.auto_graph, size: 20),
               label: const Text(
-                'SIMULATE AI CONGESTION',
+                'SIMULATE CONGESTION',
                 style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
               ),
               style: OutlinedButton.styleFrom(
@@ -312,7 +312,7 @@ class _ETADisplay extends StatelessWidget {
         Column(
           children: [
             Text('$after min', style: const TextStyle(fontSize: 56, fontWeight: FontWeight.w900, color: Color(0xFF00FF9D))),
-            const Text('AI OPTIMIZED', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF00FF9D), letterSpacing: 1.5)),
+            const Text('OPTIMIZED', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF00FF9D), letterSpacing: 1.5)),
           ],
         ),
       ],

@@ -18,7 +18,7 @@ class GreenFlowMobileApp extends StatelessWidget {
       create: (_) => TrafficController()..startDemo(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'GreenFlow AI Mobile',
+        title: 'GreenFlow Mobile',
         theme: ThemeData(
           brightness: Brightness.dark,
           scaffoldBackgroundColor: const Color(0xFF030712),
