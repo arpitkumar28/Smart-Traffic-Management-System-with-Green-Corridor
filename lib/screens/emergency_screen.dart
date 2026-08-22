@@ -56,7 +56,7 @@ class _EmergencyStandbyView extends StatelessWidget {
             'System in high-alert monitoring mode.',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -67,13 +67,13 @@ class _EmergencyStandbyView extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(40),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00E5FF).withOpacity(0.05),
+                    color: const Color(0xFF00E5FF).withValues(alpha: 0.05),
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.1)),
+                    border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.1)),
                   ),
                   child: Icon(
                     Icons.security,
-                    color: const Color(0xFF00E5FF).withOpacity(0.2),
+                    color: const Color(0xFF00E5FF).withValues(alpha: 0.2),
                     size: 100,
                   ),
                 ),
@@ -101,7 +101,7 @@ class _EmergencyStandbyView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 elevation: 10,
-                shadowColor: Colors.red.withOpacity(0.5),
+                shadowColor: Colors.red.withValues(alpha: 0.5),
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -153,7 +153,7 @@ class _ActiveCorridorHero extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Colors.red.withOpacity(0.2), Colors.transparent],
+          colors: [Colors.red.withValues(alpha: 0.2), Colors.transparent],
         ),
       ),
       child: Column(
@@ -222,7 +222,7 @@ class _ActiveCorridorHero extends StatelessWidget {
             child: Text(
               'TERMINATE PROTOCOL',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 fontWeight: FontWeight.w900,
                 fontSize: 10,
                 letterSpacing: 2,
@@ -261,9 +261,9 @@ class _LivePulsingBadgeState extends State<_LivePulsingBadge>
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.red.withOpacity(0.1 + (_controller.value * 0.2)),
-            border: Border.all(color: Colors.red.withOpacity(0.5 * _controller.value), width: 3),
-            boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.3 * _controller.value), blurRadius: 20, spreadRadius: 5)],
+            color: Colors.red.withValues(alpha: 0.1 + (_controller.value * 0.2)),
+            border: Border.all(color: Colors.red.withValues(alpha: 0.5 * _controller.value), width: 3),
+            boxShadow: [BoxShadow(color: Colors.red.withValues(alpha: 0.3 * _controller.value), blurRadius: 20, spreadRadius: 5)],
           ),
           child: const Icon(Icons.emergency, color: Colors.white, size: 40),
         );
@@ -301,7 +301,7 @@ class _ETADisplay extends StatelessWidget {
       children: [
         Column(
           children: [
-            Text('$before min', style: TextStyle(fontSize: 24, decoration: TextDecoration.lineThrough, color: Colors.white.withOpacity(0.2), fontWeight: FontWeight.w900)),
+            Text('$before min', style: TextStyle(fontSize: 24, decoration: TextDecoration.lineThrough, color: Colors.white.withValues(alpha: 0.2), fontWeight: FontWeight.w900)),
             const Text('ORIGINAL', style: TextStyle(fontSize: 9, color: Colors.white24, fontWeight: FontWeight.w900, letterSpacing: 1)),
           ],
         ),
@@ -329,10 +329,10 @@ class _MiniMetric extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(icon, color: const Color(0xFF00E5FF).withOpacity(0.7), size: 20),
+        Icon(icon, color: const Color(0xFF00E5FF).withValues(alpha: 0.7), size: 20),
         const SizedBox(height: 8),
         Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-        Text(label.toUpperCase(), style: TextStyle(fontSize: 8, color: Colors.white.withOpacity(0.4), fontWeight: FontWeight.w900)),
+        Text(label.toUpperCase(), style: TextStyle(fontSize: 8, color: Colors.white.withValues(alpha: 0.4), fontWeight: FontWeight.w900)),
       ],
     );
   }
@@ -358,7 +358,7 @@ class _ActivationFlowView extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             _getStageText().toUpperCase(),
-            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1),
             textAlign: TextAlign.center,
           ),
         ],

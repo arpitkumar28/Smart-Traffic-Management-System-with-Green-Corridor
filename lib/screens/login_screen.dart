@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           side: const BorderSide(color: Color(0xFF00FF9D), width: 0.5),
                         ),
                         elevation: 8,
-                        shadowColor: const Color(0xFF00E5FF).withOpacity(0.5),
+                        shadowColor: const Color(0xFF00E5FF).withValues(alpha: 0.5),
                       ),
                       child: const Text('ENTER COMMAND CENTER', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
@@ -145,9 +145,9 @@ class _FeatureItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF00E5FF).withOpacity(0.1),
+              color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.2)),
+              border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.2)),
             ),
             child: Icon(icon, color: const Color(0xFF00E5FF), size: 24),
           ),

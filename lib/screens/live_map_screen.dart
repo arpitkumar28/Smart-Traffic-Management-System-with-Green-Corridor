@@ -226,7 +226,7 @@ class _LiveMapScreenState extends State<LiveMapScreen>
                             .map((name) => _cityCoordinates[name] ?? const LatLng(0, 0))
                             .where((loc) => loc.latitude != 0)
                             .toList(),
-                        color: const Color(0xFF00FF9D).withOpacity(0.5),
+                        color: const Color(0xFF00FF9D).withValues(alpha: 0.5),
                         strokeWidth: 8,
                         pattern: const StrokePattern.dotted(),
                       ),
@@ -277,9 +277,9 @@ class _LiveMapScreenState extends State<LiveMapScreen>
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF07171B).withOpacity(0.9),
+                  color: const Color(0xFF07171B).withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.2)),
+                  border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -317,12 +317,12 @@ class _LiveMapScreenState extends State<LiveMapScreen>
 
 class CyberDecoration {
   static BoxDecoration get card => BoxDecoration(
-    color: const Color(0xFF07171B).withOpacity(0.7),
+    color: const Color(0xFF07171B).withValues(alpha: 0.7),
     borderRadius: BorderRadius.circular(24),
-    border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.2)),
+    border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.2)),
     boxShadow: [
       BoxShadow(
-        color: const Color(0xFF00E5FF).withOpacity(0.1),
+        color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
         blurRadius: 20,
         spreadRadius: 2,
       ),
@@ -378,7 +378,7 @@ class _AiReasoningEngine extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00FF9D).withOpacity(0.1),
+                  color: const Color(0xFF00FF9D).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -446,11 +446,11 @@ class _EmergencyNotification extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.85),
+            color: Colors.red.withValues(alpha: 0.85),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
             boxShadow: [
-              BoxShadow(color: Colors.red.withOpacity(0.5), blurRadius: 40, spreadRadius: 5),
+              BoxShadow(color: Colors.red.withValues(alpha: 0.5), blurRadius: 40, spreadRadius: 5),
             ],
           ),
           child: Column(
@@ -481,7 +481,7 @@ class _EmergencyNotification extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Text(
@@ -508,7 +508,7 @@ class _InfoRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
+        Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
         const SizedBox(height: 2),
         Text(value, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
       ],
@@ -546,7 +546,7 @@ class _LiveClockState extends State<_LiveClock> {
     return Text(
       timeStr,
       style: TextStyle(
-        color: Colors.white.withOpacity(0.4),
+        color: Colors.white.withValues(alpha: 0.4),
         fontSize: 16,
         fontWeight: FontWeight.w500,
         fontFamily: 'monospace',
@@ -581,7 +581,7 @@ class _SignalMarker extends StatelessWidget {
               height: 15 + (pulseValue * 20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: baseColor.withOpacity(0.2 * (1 - pulseValue)),
+                color: baseColor.withValues(alpha: 0.2 * (1 - pulseValue)),
               ),
             ),
             Container(
@@ -590,7 +590,7 @@ class _SignalMarker extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: baseColor,
-                boxShadow: [BoxShadow(color: baseColor.withOpacity(0.6), blurRadius: 10)],
+                boxShadow: [BoxShadow(color: baseColor.withValues(alpha: 0.6), blurRadius: 10)],
               ),
             ),
           ],
@@ -599,7 +599,7 @@ class _SignalMarker extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
@@ -626,7 +626,7 @@ class _AmbulanceMarker extends StatelessWidget {
           height: 25 + (pulseValue * 15),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.red.withOpacity(0.4 * (1 - pulseValue)),
+            color: Colors.red.withValues(alpha: 0.4 * (1 - pulseValue)),
           ),
         ),
         const Icon(Icons.emergency, color: Colors.white, size: 20),
@@ -646,8 +646,8 @@ class _GreenCorridorStatus extends StatelessWidget {
       decoration: CyberDecoration.card.copyWith(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF00FF9D).withOpacity(0.15),
-            const Color(0xFF00FF9D).withOpacity(0.05),
+            const Color(0xFF00FF9D).withValues(alpha: 0.15),
+            const Color(0xFF00FF9D).withValues(alpha: 0.05),
           ],
         ),
       ),
@@ -659,7 +659,7 @@ class _GreenCorridorStatus extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00FF9D).withOpacity(0.2),
+                  color: const Color(0xFF00FF9D).withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.bolt, color: Color(0xFF00FF9D), size: 20),
@@ -735,7 +735,7 @@ class _CorridorDetail extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label.toUpperCase(), style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 8, fontWeight: FontWeight.w900)),
+        Text(label.toUpperCase(), style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 8, fontWeight: FontWeight.w900)),
         const SizedBox(height: 2),
         Text(
           value,
@@ -824,7 +824,7 @@ class _TimelineItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(message, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500), maxLines: 2, overflow: TextOverflow.ellipsis),
-              Text(time, style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 9)),
+              Text(time, style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 9)),
             ],
           ),
         ),
@@ -848,10 +848,10 @@ class _CompactStatTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color.withOpacity(0.7), size: 16),
+          Icon(icon, color: color.withValues(alpha: 0.7), size: 16),
           const SizedBox(height: 8),
           Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-          Text(label, style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 8, fontWeight: FontWeight.w900)),
+          Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 8, fontWeight: FontWeight.w900)),
         ],
       ),
     );
@@ -868,9 +868,9 @@ class _StatusPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

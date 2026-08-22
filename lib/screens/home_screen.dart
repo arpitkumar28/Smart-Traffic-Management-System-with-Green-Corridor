@@ -118,7 +118,7 @@ class _DesktopNavbar extends StatelessWidget {
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: 32),
       decoration: BoxDecoration(
-        color: const Color(0xFF030712).withOpacity(0.82),
+        color: const Color(0xFF030712).withValues(alpha: 0.82),
         border: const Border(bottom: BorderSide(color: Color(0xFF00E5FF), width: 0.5)),
       ),
       child: Row(
@@ -156,9 +156,9 @@ class _DesktopNavbar extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
             decoration: BoxDecoration(
-              color: const Color(0xFF00E5FF).withOpacity(0.05),
+              color: const Color(0xFF00E5FF).withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.2)),
+              border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.2)),
             ),
             child: Row(
               children: const [
@@ -261,7 +261,7 @@ class _DashboardTag extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(color: accent.withOpacity(0.16), borderRadius: BorderRadius.circular(12), border: Border.all(color: accent.withOpacity(0.3))),
+          decoration: BoxDecoration(color: accent.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(12), border: Border.all(color: accent.withValues(alpha: 0.3))),
           child: Text(value, style: TextStyle(color: accent, fontWeight: FontWeight.bold, fontSize: 12)),
         ),
         const Spacer(),
@@ -341,7 +341,7 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(color: color.withOpacity(0.16), borderRadius: BorderRadius.circular(24), border: Border.all(color: color.withOpacity(0.3))),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(24), border: Border.all(color: color.withValues(alpha: 0.3))),
       child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: color, letterSpacing: 1)),
     );
   }
@@ -416,7 +416,7 @@ class _AIDecisionCenter extends StatelessWidget {
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: const Color(0xFF00FF9D).withOpacity(0.05), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF00FF9D).withOpacity(0.2))),
+            decoration: BoxDecoration(color: const Color(0xFF00FF9D).withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF00FF9D).withValues(alpha: 0.2))),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -503,7 +503,7 @@ class _WireIntelligencePanel extends StatelessWidget {
               children: [
                 Text(latest.source, style: const TextStyle(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.w900)),
                 const Spacer(),
-                Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(4)), child: Text(latest.riskLevel, style: const TextStyle(fontSize: 9, color: Colors.red, fontWeight: FontWeight.w900))),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)), child: Text(latest.riskLevel, style: const TextStyle(fontSize: 9, color: Colors.red, fontWeight: FontWeight.w900))),
               ],
             ),
           ] else
@@ -628,7 +628,7 @@ class _MobileDashboard extends StatelessWidget {
           selectedIndex: currentIndex,
           onDestinationSelected: onIndexChanged,
           backgroundColor: const Color(0xFF030712),
-          indicatorColor: const Color(0xFF00E5FF).withOpacity(0.1),
+          indicatorColor: const Color(0xFF00E5FF).withValues(alpha: 0.1),
           destinations: const [
             NavigationDestination(icon: Icon(Icons.dashboard_rounded, size: 20), label: 'HUB'),
             NavigationDestination(icon: Icon(Icons.map_rounded, size: 20), label: 'MAP'),
@@ -662,7 +662,7 @@ class _MobileDashboardView extends StatelessWidget {
                     const Text('NEON DISTRICT', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1)),
                   ],
                 ),
-                Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0xFF00E5FF).withOpacity(0.1), shape: BoxShape.circle, border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.2))), child: const Icon(Icons.radar_rounded, color: Color(0xFF00E5FF), size: 24)),
+                Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0xFF00E5FF).withValues(alpha: 0.1), shape: BoxShape.circle, border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.2))), child: const Icon(Icons.radar_rounded, color: Color(0xFF00E5FF), size: 24)),
               ],
             ),
           ),
@@ -696,7 +696,7 @@ class _QuickStatPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withOpacity(0.3))),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withValues(alpha: 0.3))),
       child: Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
     );
   }
@@ -724,7 +724,7 @@ class _AIRecCard extends StatelessWidget {
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: const Color(0xFF00FF9D).withOpacity(0.05), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF00FF9D).withOpacity(0.2))),
+            decoration: BoxDecoration(color: const Color(0xFF00FF9D).withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF00FF9D).withValues(alpha: 0.2))),
             child: Row(
               children: [
                 const Icon(Icons.bolt, color: Color(0xFF00FF9D), size: 16),
@@ -746,7 +746,7 @@ class HeroMap extends StatelessWidget {
     return Container(
       height: 220,
       width: double.infinity,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(24), border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.2)), boxShadow: [BoxShadow(color: const Color(0xFF00E5FF).withOpacity(0.1), blurRadius: 15)]),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(24), border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.2)), boxShadow: [BoxShadow(color: const Color(0xFF00E5FF).withValues(alpha: 0.1), blurRadius: 15)]),
       child: ClipRRect(borderRadius: BorderRadius.circular(24), child: const LiveMapScreen(isHeroMode: true)),
     );
   }

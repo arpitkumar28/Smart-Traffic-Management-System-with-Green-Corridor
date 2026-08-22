@@ -38,7 +38,7 @@ class AnalyticsScreen extends StatelessWidget {
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.5,
-                    color: const Color(0xFF00E5FF).withOpacity(0.7),
+                    color: const Color(0xFF00E5FF).withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -69,7 +69,7 @@ class AnalyticsScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF00FF9D).withOpacity(0.1),
+                          color: const Color(0xFF00FF9D).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Text(
@@ -220,7 +220,7 @@ class _ModernMetric extends StatelessWidget {
             style: TextStyle(
               fontSize: 8,
               fontWeight: FontWeight.w900,
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               letterSpacing: 1.0,
             ),
           ),
@@ -242,13 +242,13 @@ class _SourceTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF07171B).withOpacity(0.4),
+        color: const Color(0xFF07171B).withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.1)),
+        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF00E5FF).withOpacity(0.5), size: 20),
+          Icon(icon, color: const Color(0xFF00E5FF).withValues(alpha: 0.5), size: 20),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
@@ -284,7 +284,7 @@ class _SparklinePainter extends CustomPainter {
     final paint = Paint()..color = color..strokeWidth = 3..style = PaintingStyle.stroke..strokeCap = StrokeCap.round;
     final path = Path()..moveTo(0, size.height * 0.7)..lineTo(size.width * 0.2, size.height * 0.8)..lineTo(size.width * 0.4, size.height * 0.4)..lineTo(size.width * 0.6, size.height * 0.6)..lineTo(size.width * 0.8, size.height * 0.2)..lineTo(size.width, size.height * 0.3);
     final fillPath = Path.from(path)..lineTo(size.width, size.height)..lineTo(0, size.height)..close();
-    final fillPaint = Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [color.withOpacity(0.2), Colors.transparent]).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    final fillPaint = Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [color.withValues(alpha: 0.2), Colors.transparent]).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawPath(fillPath, fillPaint);
     canvas.drawPath(path, paint);
   }

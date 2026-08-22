@@ -28,7 +28,7 @@ class NeonBackground extends StatelessWidget {
                   center: const Alignment(0, -0.5),
                   radius: 1.5,
                   colors: [
-                    const Color(0xFF18F2FF).withOpacity(0.03),
+                    const Color(0xFF18F2FF).withValues(alpha: 0.03),
                     Colors.transparent,
                   ],
                 ),

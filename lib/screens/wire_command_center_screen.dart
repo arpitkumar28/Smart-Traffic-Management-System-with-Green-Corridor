@@ -150,12 +150,12 @@ class WireCommandCenterScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: active
-            ? const Color(0xFF18F2FF).withOpacity(0.1)
+            ? const Color(0xFF18F2FF).withValues(alpha: 0.1)
             : Colors.white10,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: active
-              ? const Color(0xFF18F2FF).withOpacity(0.5)
+              ? const Color(0xFF18F2FF).withValues(alpha: 0.5)
               : Colors.white10,
         ),
       ),
