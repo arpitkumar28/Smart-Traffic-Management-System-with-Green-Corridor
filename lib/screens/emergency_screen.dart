@@ -30,7 +30,6 @@ class _EmergencyStandbyView extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 40),
           const Text(
@@ -48,7 +47,6 @@ class _EmergencyStandbyView extends StatelessWidget {
               fontSize: 32,
               fontWeight: FontWeight.w900,
               color: Colors.white,
-              letterSpacing: -1.0,
             ),
           ),
           const SizedBox(height: 8),
@@ -108,8 +106,6 @@ class _EmergencyStandbyView extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                elevation: 10,
-                shadowColor: Colors.red.withValues(alpha: 0.5),
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -198,112 +194,134 @@ class _ActiveCorridorHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Colors.red.withValues(alpha: 0.2), Colors.transparent],
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.red.withValues(alpha: 0.2), Colors.transparent],
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 40),
-          _LivePulsingBadge(),
-          const SizedBox(height: 24),
-          const Text(
-            'SIMULATED CORRIDOR CONFIRMED',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 4,
-              color: Color(0xFF00FF9D),
+        child: Column(
+          children: [
+            const SizedBox(height: 32),
+            _LivePulsingBadge(),
+            const SizedBox(height: 24),
+            const Text(
+              'SIMULATED CORRIDOR CONFIRMED',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 4,
+                color: Color(0xFF00FF9D),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            controller.emergency.vehicleId,
-            style: const TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              letterSpacing: -2,
-            ),
-          ),
-          const SizedBox(height: 40),
-
-          // Destination Info
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _HeroMetaTile(
-                  label: 'Destination',
-                  value: controller.emergency.destination,
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  controller.emergency.vehicleId,
+                  style: const TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -2,
+                  ),
                 ),
-                _HeroMetaTile(
-                  label: 'Priority',
-                  value: 'CRITICAL',
-                  alignEnd: true,
-                ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: 28),
 
-          const Spacer(),
-
-          // Immersive ETA Animation
-          _ETADisplay(
-            before: controller.etaBeforeMinutes,
-            after: controller.etaAfterMinutes,
-          ),
-
-          const Spacer(),
-
-          // Bottom Stats
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: GlassCard(
-              padding: const EdgeInsets.all(32),
+            // Destination Info
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _MiniMetric(
-                    label: 'Time Saved',
-                    value: '${controller.emergency.timeSavedSeconds ~/ 60}m',
-                    icon: Icons.speed,
+                  Flexible(
+                    child: _HeroMetaTile(
+                      label: 'Destination',
+                      value: controller.emergency.destination,
+                    ),
                   ),
-                  _MiniMetric(
-                    label: 'Hubs Locked',
-                    value: '${controller.signalsOptimized}',
-                    icon: Icons.lock_outline,
-                  ),
-                  _MiniMetric(
-                    label: 'Integrity',
-                    value: '100%',
-                    icon: Icons.verified_user,
+                  const SizedBox(width: 16),
+                  _HeroMetaTile(
+                    label: 'Priority',
+                    value: 'CRITICAL',
+                    alignEnd: true,
                   ),
                 ],
               ),
             ),
-          ),
 
-          TextButton(
-            onPressed: () => controller.deactivateEmergencyMode(),
-            child: Text(
-              'TERMINATE PROTOCOL',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.3),
-                fontWeight: FontWeight.w900,
-                fontSize: 10,
-                letterSpacing: 2,
+            const SizedBox(height: 42),
+
+            // Immersive ETA Animation
+            _ETADisplay(
+              before: controller.etaBeforeMinutes,
+              after: controller.etaAfterMinutes,
+            ),
+
+            const SizedBox(height: 40),
+
+            // Bottom Stats
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: GlassCard(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 24,
+                  horizontal: 12,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _MiniMetric(
+                        label: 'Time Saved',
+                        value:
+                            '${controller.emergency.timeSavedSeconds ~/ 60}m',
+                        icon: Icons.speed,
+                      ),
+                    ),
+                    Expanded(
+                      child: _MiniMetric(
+                        label: 'Hubs Locked',
+                        value: '${controller.signalsOptimized}',
+                        icon: Icons.lock_outline,
+                      ),
+                    ),
+                    Expanded(
+                      child: _MiniMetric(
+                        label: 'Integrity',
+                        value: '100%',
+                        icon: Icons.verified_user,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-        ],
+
+            TextButton(
+              onPressed: () => controller.deactivateEmergencyMode(),
+              child: Text(
+                'TERMINATE PROTOCOL',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 10,
+                  letterSpacing: 2,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
       ),
     );
   }
