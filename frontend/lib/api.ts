@@ -106,7 +106,8 @@ export function normalizeWebSocketEventType(raw: string | undefined): Normalized
   const normalized = input.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
 
   if (normalized.includes("signal")) return "signal.update";
-  if (normalized.includes("green_corridor") || normalized.includes("corridor")) return "corridor.activated";
+  if (normalized.includes("green_corridor_activated") || normalized === "corridor_activated") return "corridor.activated";
+  if (normalized.includes("corridor_completed") || normalized.includes("corridor_terminated")) return "corridor.completed";
   if (normalized.includes("alert")) return "alert.update";
   if (normalized.includes("analytics")) return "analytics.update";
   if (normalized.includes("vehicle") || normalized.includes("ambulance")) return "vehicle.update";

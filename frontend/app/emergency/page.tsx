@@ -5,7 +5,8 @@ import { Ambulance, AlertCircle, Siren, TimerReset, RotateCw, ShieldCheck, Activ
 import type { ReactNode } from "react";
 import { Shell } from "@/components/Shell";
 import { Card, cn } from "@/components/ui";
-import { triggerEmergencyCorridor, fetchEvents, openGreenFlowSocket, type TrafficEvent } from "@/lib/api";
+import { triggerEmergencyCorridor, fetchEvents, type TrafficEvent } from "@/lib/api";
+import useRealtime from "@/hooks/useRealtime";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function EmergencyPage() {
@@ -21,6 +22,15 @@ export default function EmergencyPage() {
   } | null>(null);
   const [recentEvents, setRecentEvents] = useState<TrafficEvent[]>([]);
 
+  const { status: realtimeStatus } = useRealtime((type, payload) => {
+    if (type !== "event.created" && type !== "corridor.activated") return;
+    const message = payload as { event?: TrafficEvent } | TrafficEvent;
+    const event = "event" in message && typeof message.event === "object" && message.event
+      ? message.event
+      : message as TrafficEvent;
+    setRecentEvents((prev) => [event, ...prev].slice(0, 5));
+  }, (err) => console.error("WebSocket error:", err));
+
   useEffect(() => {
     // Fetch initial events
     fetchEvents()
@@ -29,24 +39,6 @@ export default function EmergencyPage() {
       })
       .catch((err) => console.error("Failed to fetch events:", err));
 
-    // Set up WebSocket for real-time events
-    const socket = openGreenFlowSocket(
-      (message) => {
-        if (message.type === "event.created" || message.type === "corridor.activated") {
-          const payload = message.payload as { event?: TrafficEvent };
-          const event = payload.event ?? (message.payload as TrafficEvent);
-          setRecentEvents((prev) => [event, ...prev].slice(0, 5));
-        }
-      },
-      (error) => console.error("WebSocket error:", error),
-      () => console.log("WebSocket disconnected")
-    );
-
-    return () => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.close();
-      }
-    };
   }, []);
 
   const handleTriggerCorridor = async () => {
@@ -57,22 +49,12 @@ export default function EmergencyPage() {
       const response = await triggerEmergencyCorridor("AMB-102", "City General Hospital");
       
       setCorridorStatus({
-        signalsSynced: response.signalsOptimized ?? response.signalsSynced ?? 18,
-        eta: `${response.etaAfter ?? 3.2}m`,
-        timeSaved: `-${response.timeSaved ?? 4.8}m`,
-        ambulance: response.ambulance ?? "AMB-204",
-        destination: response.destination ?? "City General Hospital",
+        signalsSynced: response.signalsOptimized ?? response.signalsSynced ?? 0,
+        eta: response.etaAfter === undefined ? "Not reported" : `${response.etaAfter}m`,
+        timeSaved: response.timeSaved === undefined ? "Not reported" : `-${response.timeSaved}m`,
+        ambulance: response.ambulance ?? "Not reported",
+        destination: response.destination ?? "Not reported",
       });
-
-      // Add a simulation event
-      const newEvent: TrafficEvent = {
-          id: Date.now(),
-          event: "PRIORITY CORRIDOR ENGAGED: AMB-102",
-          timestamp: new Date().toLocaleTimeString(),
-          location: "ZONE-1",
-          type: "emergency"
-      };
-      setRecentEvents(prev => [newEvent, ...prev].slice(0, 5));
 
     } catch (err) {
       console.error("Failed to trigger corridor:", err);
@@ -176,8 +158,8 @@ export default function EmergencyPage() {
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xs font-black tracking-widest text-white uppercase">Mission intelligence</h3>
                     <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                        <span className="text-[9px] font-black text-primary uppercase">Active Uplink</span>
+                      <div className={cn("w-1.5 h-1.5 rounded-full", realtimeStatus === "LIVE" ? "bg-success animate-pulse" : "bg-warning")} />
+                      <span className="text-[9px] font-black text-primary uppercase">{realtimeStatus}</span>
                     </div>
                 </div>
 

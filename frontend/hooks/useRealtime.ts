@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { normalizeWebSocketEventType, openGreenFlowSocket } from "@/lib/api";
+import { useEffect, useRef, useState } from "react";
+import { subscribeRealtime, type RealtimeStatus } from "@/lib/realtime";
 import type { NormalizedEventType, WebSocketMessage } from "@/lib/types";
 
 export type RealtimeHandler = (type: NormalizedEventType, payload: unknown, raw?: WebSocketMessage) => void;
@@ -12,6 +12,7 @@ export default function useRealtime(
   onClose?: () => void
 ) {
   const socketRef = useRef<WebSocket | null>(null);
+  const [status, setStatus] = useState<RealtimeStatus>("OFFLINE");
   const eventHandlerRef = useRef(onEvent);
   const errorHandlerRef = useRef(onError);
   const closeHandlerRef = useRef(onClose);
@@ -23,28 +24,14 @@ export default function useRealtime(
   }, [onEvent, onError, onClose]);
 
   useEffect(() => {
-    if (!eventHandlerRef.current) return;
-
-    const socket = openGreenFlowSocket((msg: WebSocketMessage) => {
-      try {
-        const type = normalizeWebSocketEventType(msg.type);
-        eventHandlerRef.current?.(type, msg.payload, msg);
-      } catch (error) {
-        console.error("Realtime message handler error:", error);
-      }
-    }, (error) => errorHandlerRef.current?.(error), () => closeHandlerRef.current?.());
-
-    socketRef.current = socket;
-
-    return () => {
-      try {
-        socket.close();
-      } catch {
-        // no-op
-      }
-      socketRef.current = null;
-    };
+    return subscribeRealtime({
+      onEvent: (type, payload, raw) => eventHandlerRef.current?.(type, payload, raw),
+      onStatus: (nextStatus) => {
+        setStatus(nextStatus);
+        if (nextStatus === "OFFLINE") closeHandlerRef.current?.();
+      },
+    });
   }, []);
 
-  return socketRef;
+  return { socketRef, status };
 }

@@ -4,20 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Activity, Ambulance, BarChart3, Gauge, Map, MapPinned, RadioTower, Route, Settings, Cpu, TrendingUp } from "lucide-react";
+import { Activity, AlertCircle, Ambulance, BarChart3, Gauge, Map, MapPinned, RadioTower, Route, Settings, Cpu, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SystemStatus } from "@/components/SystemStatus";
 
-const nav = [
-  { href: "/dashboard", label: "OVERVIEW", icon: Gauge },
-  { href: "/live-operations", label: "LIVE OPERATIONS", icon: Map },
-  { href: "/emergency", label: "EMERGENCY RESPONSE", icon: Ambulance },
-  { href: "/green-corridors", label: "GREEN CORRIDORS", icon: Route },
-  { href: "/signal-sync", label: "SIGNAL SYNC", icon: RadioTower },
-  { href: "/traffic-network", label: "TRAFFIC NETWORK", icon: MapPinned },
-  { href: "/edge-network", label: "IOT TRAFFIC NETWORK", icon: Cpu },
-  { href: "/lane-management", label: "LANE MANAGEMENT", icon: Activity },
-  { href: "/traffic-insights", label: "TRAFFIC INSIGHTS", icon: BarChart3 },
-  { href: "/analytics", label: "ANALYTICS", icon: TrendingUp },
+const navGroups = [
+  { label: "OPERATIONS", items: [{ href: "/dashboard", label: "COMMAND CENTER", icon: Gauge }, { href: "/live-operations", label: "LIVE OPERATIONS", icon: Map }, { href: "/traffic-network", label: "NETWORK HEALTH", icon: MapPinned }] },
+  { label: "EMERGENCY", items: [{ href: "/green-corridors", label: "ACTIVE CORRIDORS", icon: Route }, { href: "/emergency", label: "VEHICLES", icon: Ambulance }, { href: "/live-operations", label: "ALERTS & INCIDENTS", icon: AlertCircle }] },
+  { label: "INTELLIGENCE", items: [{ href: "/traffic-insights", label: "TRAFFIC INSIGHTS", icon: BarChart3 }, { href: "/ai-monitoring", label: "PREDICTIONS", icon: TrendingUp }, { href: "/analytics", label: "ANALYTICS", icon: TrendingUp }] },
+  { label: "INFRASTRUCTURE", items: [{ href: "/signal-sync", label: "SIGNAL SYNC", icon: RadioTower }, { href: "/edge-network", label: "IOT TRAFFIC NETWORK", icon: Cpu }, { href: "/lane-management", label: "LANE MANAGEMENT", icon: Activity }] },
+  { label: "ADMINISTRATION", items: [{ href: "/settings", label: "SETTINGS", icon: Settings }, { href: "/live-operations", label: "AUDIT LOG", icon: Activity }] },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -39,7 +35,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <div className="flex flex-1 items-center justify-end flex-wrap gap-3 text-[9px] font-black tracking-widest text-text-secondary uppercase">
             <div className="flex items-center gap-2 text-success bg-success/5 px-2 py-1 rounded-full border border-success/10">
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              SYSTEM ONLINE
+              <SystemStatus compact />
             </div>
             <div className="flex items-center gap-2 text-success bg-success/5 px-2 py-1 rounded-full border border-success/10">
               <span className="w-1.5 h-1.5 rounded-full bg-success" />
@@ -70,7 +66,9 @@ export function Shell({ children }: { children: ReactNode }) {
         {!isLanding && (
           <aside className="w-20 lg:w-64 border-r border-border bg-secondary-background flex flex-col transition-all duration-300">
             <nav className="flex-1 p-4 space-y-2">
-              {nav.map((item) => {
+              {navGroups.map((group) => <div key={group.label} className="space-y-2">
+                <p className="hidden px-4 pt-3 text-[9px] font-black tracking-[0.2em] text-text-secondary/60 lg:block">{group.label}</p>
+                {group.items.map((item) => {
                 const Icon = item.icon;
                 const active = pathname === item.href;
                 return (
@@ -88,18 +86,10 @@ export function Shell({ children }: { children: ReactNode }) {
                     <span className="hidden lg:block">{item.label}</span>
                   </Link>
                 );
-              })}
+                })}
+              </div>)}
             </nav>
             
-            <div className="p-4 border-t border-border">
-               <Link
-                href="/settings"
-                className="flex items-center gap-3 rounded-lg px-4 py-3 text-xs font-bold tracking-wider text-text-secondary hover:bg-white/5 hover:text-text-primary transition-all"
-              >
-                <Settings size={18} />
-                <span className="hidden lg:block">SETTINGS</span>
-              </Link>
-            </div>
           </aside>
         )}
 
