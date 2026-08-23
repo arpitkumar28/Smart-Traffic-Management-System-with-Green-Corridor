@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function EmergencyPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [corridorStatus, setCorridorStatus] = useState<{
     signalsSynced: number;
     eta: string;
@@ -52,6 +53,7 @@ export default function EmergencyPage() {
     try {
       setLoading(true);
       setError(null);
+      setConfirmOpen(false);
       const response = await triggerEmergencyCorridor("AMB-102", "City General Hospital");
       
       setCorridorStatus({
@@ -134,7 +136,7 @@ export default function EmergencyPage() {
                                     ? "bg-danger text-white border-danger shadow-[0_0_30px_rgba(233,91,91,0.4)]"
                                     : "bg-success text-background border-success shadow-[0_0_25px_rgba(49,215,123,0.3)] hover:scale-[1.02]"
                         )} 
-                        onClick={handleTriggerCorridor}
+                        onClick={() => setConfirmOpen(true)}
                         disabled={loading}
                     >
                         {loading ? <RotateCw className="animate-spin" size={24} /> : <Ambulance size={24} />}
@@ -152,7 +154,7 @@ export default function EmergencyPage() {
             <div className="grid gap-4 md:grid-cols-3">
               <Panel 
                 icon={<TimerReset size={20} />} 
-                label="LIVE ETA" 
+                label="DEMO ETA"
                 value={corridorStatus?.eta ?? "--"} 
                 color="text-primary"
               />
@@ -264,6 +266,19 @@ export default function EmergencyPage() {
             </div>
         </Card>
       </div>
+
+      {confirmOpen && (
+        <div className="confirm-overlay" role="presentation" onClick={() => setConfirmOpen(false)}>
+          <div className="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="emergency-confirm-title" onClick={(event) => event.stopPropagation()}>
+            <h2 id="emergency-confirm-title">Confirm live emergency demo</h2>
+            <p>This will request priority routing for AMB-102 to City General Hospital and may change signal timing along the calculated route.</p>
+            <div className="confirm-actions">
+              <button className="outline-button" onClick={() => setConfirmOpen(false)}>Cancel</button>
+              <button className="action-button" onClick={handleTriggerCorridor} disabled={loading}>Confirm activation</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx global>{`
         .glass-card {

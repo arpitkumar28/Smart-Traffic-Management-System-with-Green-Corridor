@@ -53,6 +53,10 @@ export function Shell({ children }: { children: ReactNode }) {
               <span className="w-1.5 h-1.5 rounded-full bg-success" />
               EMERGENCY NETWORK READY
             </div>
+            {!isLanding && <div className="flex items-center gap-2 text-warning bg-warning/5 px-2 py-1 rounded-full border border-warning/20" aria-label="Demo mode">
+              <span className="w-1.5 h-1.5 rounded-full bg-warning" />
+              DEMO MODE
+            </div>}
             
              <div className="flex items-center gap-4 ml-2">
                <div className="h-4 w-[1px] bg-border" />
