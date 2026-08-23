@@ -42,6 +42,7 @@ export interface IoTNode {
   lastUpdated: string;
   sensorStatus: string;
   signalControllerStatus: string;
+  coordinationStatus?: string;
 }
 
 export interface IoTNetworkResponse {
@@ -99,6 +100,19 @@ export interface GreenCorridorResponse {
   priorityScore?: number;
 }
 
+export interface EmergencyCorridorDemo {
+  scenario: "EMERGENCY_CORRIDOR_DEMO";
+  mode: "SIMULATION";
+  vehicle: "SIM-EMERGENCY-01";
+  vehicleType: string;
+  destination: "Simulation Hospital";
+  route: string[];
+  affectedNodes: number;
+  status: "IDLE" | "PREPARED" | "EXECUTING" | "CONFIRMED";
+  nodes: IoTNode[];
+  timestamp: string;
+}
+
 export interface AIRecommendation {
   zone: string;
   risk: string;
@@ -132,6 +146,8 @@ export function normalizeWebSocketEventType(raw: string | undefined): Normalized
   const normalized = input.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
 
   if (normalized.includes("signal")) return "signal.update";
+  if (normalized.includes("green_corridor_prepared")) return "corridor.prepared";
+  if (normalized.includes("green_corridor_confirmed")) return "corridor.confirmed";
   if (normalized.includes("green_corridor_activated") || normalized === "corridor_activated") return "corridor.activated";
   if (normalized.includes("corridor_completed") || normalized.includes("corridor_terminated")) return "corridor.completed";
   if (normalized.includes("alert")) return "alert.update";
@@ -188,6 +204,21 @@ export async function setIoTScenario(scenario: string): Promise<IoTNetworkRespon
 
 export async function resetIoTSimulation(): Promise<IoTNetworkResponse> {
   const { data } = await api.post<IoTNetworkResponse>("/edge-network/simulation/reset");
+  return data;
+}
+
+export async function prepareEmergencyDemo(): Promise<EmergencyCorridorDemo> {
+  const { data } = await api.post<EmergencyCorridorDemo>("/edge-network/simulation/demo/emergency");
+  return data;
+}
+
+export async function executeEmergencyDemo(failure?: "HTTP" | "TIMEOUT"): Promise<EmergencyCorridorDemo> {
+  const { data } = await api.post<EmergencyCorridorDemo>("/edge-network/simulation/demo/emergency/execute", failure ? { failure } : {});
+  return data;
+}
+
+export async function resetEmergencyDemo(): Promise<EmergencyCorridorDemo> {
+  const { data } = await api.post<EmergencyCorridorDemo>("/edge-network/simulation/demo/reset");
   return data;
 }
 

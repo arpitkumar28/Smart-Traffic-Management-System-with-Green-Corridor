@@ -80,3 +80,48 @@ def test_virtual_iot_network_scenarios_and_reset():
 def test_virtual_iot_rejects_unknown_scenario():
     response = client.post("/edge-network/simulation/scenario", json={"scenario": "RANDOM"})
     assert response.status_code == 400
+
+
+def test_emergency_corridor_demo_is_deterministic_and_confirmed_by_backend():
+    prepared = client.post("/edge-network/simulation/demo/emergency")
+    assert prepared.status_code == 200
+    payload = prepared.json()
+    assert payload["scenario"] == "EMERGENCY_CORRIDOR_DEMO"
+    assert payload["vehicle"] == "SIM-EMERGENCY-01"
+    assert payload["route"] == ["GF-J01", "GF-J02", "GF-J03", "GF-J04", "GF-J05"]
+    assert payload["status"] == "PREPARED"
+    node = next(item for item in payload["nodes"] if item["nodeId"] == "GF-J03")
+    assert node["status"] == "WARNING"
+    assert node["queueLengthMeters"] == 320
+
+    confirmed = client.post("/edge-network/simulation/demo/emergency/execute")
+    assert confirmed.status_code == 200
+    assert confirmed.json()["status"] == "CONFIRMED"
+    assert all(item["coordinationStatus"] == "COORDINATION_ACTIVE" for item in confirmed.json()["nodes"])
+
+
+def test_emergency_corridor_demo_failures_and_reset():
+    client.post("/edge-network/simulation/demo/emergency")
+    rejected = client.post(
+        "/edge-network/simulation/demo/emergency/execute",
+        json={"failure": "HTTP"},
+    )
+    assert rejected.status_code == 409
+    assert rejected.json()["detail"] == "COMMAND NOT CONFIRMED"
+
+    timeout = client.post(
+        "/edge-network/simulation/demo/emergency/execute",
+        json={"failure": "TIMEOUT"},
+    )
+    assert timeout.status_code == 504
+    assert timeout.json()["detail"] == "COMMAND STATUS UNKNOWN"
+
+    client.post("/edge-network/simulation/node/GF-J03/offline")
+    blocked = client.post("/edge-network/simulation/demo/emergency/execute")
+    assert blocked.status_code == 409
+    assert "GF-J03" in blocked.json()["detail"]
+
+    reset = client.post("/edge-network/simulation/demo/reset")
+    assert reset.status_code == 200
+    assert reset.json()["status"] == "IDLE"
+    assert reset.json()["nodes"][2]["status"] == "WARNING"

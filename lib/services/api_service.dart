@@ -36,7 +36,8 @@ class ApiService {
 
   Future<List<dynamic>> getIoTNodes() async {
     final response = await _request(http.get(_uri('/edge-network')));
-    return (jsonDecode(response.body) as Map<String, dynamic>)['nodes'] as List<dynamic>;
+    return (jsonDecode(response.body) as Map<String, dynamic>)['nodes']
+        as List<dynamic>;
   }
 
   Future<List<dynamic>> getAlerts() async {
@@ -63,14 +64,41 @@ class ApiService {
     required String ambulanceId,
     required String destination,
   }) async {
-    final response = await _request(http.post(
-          _uri('/ambulance/activate'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'ambulanceId': ambulanceId,
-            'destination': destination,
-          }),
-        ));
+    final response = await _request(
+      http.post(
+        _uri('/ambulance/activate'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'ambulanceId': ambulanceId,
+          'destination': destination,
+        }),
+      ),
+    );
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> prepareEmergencyDemo() async {
+    final response = await _request(
+      http.post(_uri('/edge-network/simulation/demo/emergency')),
+    );
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> executeEmergencyDemo() async {
+    final response = await _request(
+      http.post(
+        _uri('/edge-network/simulation/demo/emergency/execute'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({}),
+      ),
+    );
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> resetEmergencyDemo() async {
+    final response = await _request(
+      http.post(_uri('/edge-network/simulation/demo/reset')),
+    );
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
@@ -127,7 +155,10 @@ class ApiService {
       'title': 'Ambulance detected',
       'description': 'Emergency vehicle A-204 approaching SIG-04',
     },
-    {'title': 'Engine Alert', 'description': 'Congestion rising near Tech Park'},
+    {
+      'title': 'Engine Alert',
+      'description': 'Congestion rising near Tech Park',
+    },
     {'title': 'Signal optimized', 'description': 'SIG-03 optimized'},
   ];
 

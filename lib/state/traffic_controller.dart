@@ -20,7 +20,6 @@ enum SystemStatus { live, demo, stale, offline, connecting, reconnecting }
 class TrafficController extends ChangeNotifier {
   final ApiService apiService = ApiService();
   final Random _random = Random();
-  Timer? _timer;
   Timer? _reconnectTimer;
   StreamSubscription<Map<String, dynamic>>? _socketSubscription;
 
@@ -47,12 +46,12 @@ class TrafficController extends ChangeNotifier {
   Map<String, dynamic> prediction = {};
 
   EmergencyEvent emergency = const EmergencyEvent(
-    vehicleId: 'A-204',
-    destination: 'City General Hospital',
-    route: ['Tech Park', 'Civic Center', 'Metro Junction', 'Hospital Road'],
+    vehicleId: 'SIM-EMERGENCY-01',
+    destination: 'Simulation Hospital',
+    route: ['GF-J01', 'GF-J02', 'GF-J03', 'GF-J04', 'GF-J05'],
     etaSeconds: 240,
     timeSavedSeconds: 240,
-    active: true,
+    active: false,
   );
 
   List<TrafficSignal> signals = const [];
@@ -65,55 +64,9 @@ class TrafficController extends ChangeNotifier {
   String aiAction = 'Extend green signal by 12 seconds';
 
   void startDemo() {
-    if (apiService.isDemoMode) {
-      systemStatus = SystemStatus.demo;
-      _seedDemoData();
-      _startDemoSimulation();
-    } else {
-      systemStatus = SystemStatus.connecting;
-      refreshFromApi();
-    }
-    if (!apiService.isDemoMode) _connectWebSocket();
-  }
-
-  void _startDemoSimulation() {
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
-      networkFlow = (74 + _random.nextInt(20)).clamp(0, 100);
-      vehiclesPerMinute = 980 + _random.nextInt(520);
-      avgWaitSeconds = (32 + _random.nextInt(28)).clamp(15, 60);
-      aiConfidence = 88 + _random.nextInt(8);
-
-      if (emergencyActive && emergency.etaSeconds > 15) {
-        emergency = EmergencyEvent(
-          vehicleId: emergency.vehicleId,
-          destination: emergency.destination,
-          route: emergency.route,
-          etaSeconds: (emergency.etaSeconds - 3).clamp(0, 600),
-          timeSavedSeconds: emergency.timeSavedSeconds,
-          active: true,
-        );
-      }
-
-      // Generate random Wire intelligence if in demo
-      if (_random.nextDouble() > 0.8) {
-        _addRandomWireIntelligence();
-      }
-
-      signals = signals.map((signal) {
-        final nextLoad = (signal.load + _random.nextInt(17) - 8).clamp(12, 98);
-        final mode = emergencyActive && emergency.route.contains(signal.name)
-            ? SignalMode.priority
-            : _modeForLoad(nextLoad);
-        return TrafficSignal(
-          id: signal.id,
-          name: signal.name,
-          load: nextLoad,
-          mode: mode,
-        );
-      }).toList();
-      notifyListeners();
-    });
+    systemStatus = SystemStatus.connecting;
+    refreshFromApi();
+    _connectWebSocket();
   }
 
   void _addRandomWireIntelligence() {
@@ -141,7 +94,6 @@ class TrafficController extends ChangeNotifier {
   }
 
   Future<void> refreshFromApi() async {
-    if (apiService.isDemoMode) return;
     systemStatus = SystemStatus.connecting;
     errorMessage = null;
     notifyListeners();
@@ -162,21 +114,24 @@ class TrafficController extends ChangeNotifier {
       lastUpdated = DateTime.now();
       notifyListeners();
     } catch (_) {
-      systemStatus = lastUpdated == null ? SystemStatus.offline : SystemStatus.stale;
+      systemStatus = lastUpdated == null
+          ? SystemStatus.offline
+          : SystemStatus.stale;
       errorMessage = 'Unable to load live traffic data. Retry when connected.';
       notifyListeners();
     }
   }
 
   Future<void> activateEmergencyMode() async {
-    if (apiService.isDemoMode || systemStatus != SystemStatus.live) {
+    if (systemStatus != SystemStatus.live &&
+        systemStatus != SystemStatus.demo) {
       corridorCommandStatus = 'COMMAND BLOCKED OFFLINE';
       errorMessage = 'Operational commands require a live backend connection.';
       notifyListeners();
       return;
     }
     if (activationStage != EmergencyActivationStage.none) return;
-    corridorCommandStatus = 'COMMAND SENT';
+    corridorCommandStatus = 'SIMULATION COMMAND SENT';
     activationStage = EmergencyActivationStage.detecting;
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 500));
@@ -194,19 +149,18 @@ class TrafficController extends ChangeNotifier {
     await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      final response = await apiService.activateAmbulance(
-        ambulanceId: emergency.vehicleId,
-        destination: emergency.destination,
-      );
-      if (response['status'] != 'Green Corridor Activated') {
-        throw const ApiException(null, 'Backend did not confirm corridor activation');
+      await apiService.prepareEmergencyDemo();
+      final response = await apiService.executeEmergencyDemo();
+      if (response['status'] != 'CONFIRMED') {
+        throw const ApiException(null, 'Backend did not confirm simulation');
       }
       _applyGreenCorridor(response);
       await refreshFromApi();
     } catch (_) {
       activationStage = EmergencyActivationStage.none;
       corridorCommandStatus = 'COMMAND STATUS UNKNOWN';
-      errorMessage = 'Command status could not be confirmed. Check the backend before retrying.';
+      errorMessage =
+          'Command status could not be confirmed. Check the backend before retrying.';
       notifyListeners();
     }
   }
@@ -267,7 +221,7 @@ class TrafficController extends ChangeNotifier {
   }
 
   void _scheduleReconnect() {
-    if (apiService.isDemoMode || _reconnectTimer != null) return;
+    if (_reconnectTimer != null) return;
     systemStatus = SystemStatus.reconnecting;
     notifyListeners();
     _reconnectTimer = Timer(const Duration(seconds: 2), () {
@@ -281,43 +235,58 @@ class TrafficController extends ChangeNotifier {
     lastUpdated = DateTime.now();
     final type = message['type'] as String? ?? '';
     final payload = message['payload'];
-    if ((type == 'green_corridor' || type == 'GREEN_CORRIDOR_ACTIVATED' || type == 'corridor.activated') &&
+    if ((type == 'green_corridor' ||
+            type == 'GREEN_CORRIDOR_ACTIVATED' ||
+            type == 'GREEN_CORRIDOR_CONFIRMED' ||
+            type == 'corridor.activated' ||
+            type == 'corridor.confirmed') &&
         payload is Map<String, dynamic>) {
-      if (payload['status'] != 'Green Corridor Activated') return;
+      if (payload['status'] != 'Green Corridor Activated' &&
+          payload['status'] != 'CONFIRMED') {
+        return;
+      }
       _applyGreenCorridor(payload);
     }
-    if (type == 'signal_updates' ||
+    if (type == 'IOT_NODE_UPDATE' ||
+        type == 'signal_updates' ||
+        type == 'SIGNAL_UPDATE' ||
         type == 'alert_updates' ||
-        type == 'event_updates') {
+        type == 'ALERT_UPDATE' ||
+        type == 'event_updates' ||
+        type == 'event_update') {
       refreshFromApi();
     }
-    if (type == 'analytics_updates' && payload is Map<String, dynamic>) {
+    if ((type == 'analytics_updates' || type == 'ANALYTICS_UPDATE') &&
+        payload is Map<String, dynamic>) {
       _applyAnalytics(payload);
       notifyListeners();
     }
   }
 
   void _applyGreenCorridor(Map<String, dynamic> payload) {
-    if (payload['status'] != 'Green Corridor Activated') return;
+    if (payload['status'] != 'Green Corridor Activated' &&
+        payload['status'] != 'CONFIRMED') {
+      return;
+    }
     emergencyActive = true;
     activationStage = EmergencyActivationStage.active;
     corridorCommandStatus = 'COMMAND CONFIRMED';
     errorMessage = null;
     etaBeforeMinutes = payload['etaBefore'] as int? ?? 8;
     etaAfterMinutes = payload['etaAfter'] as int? ?? 4;
-    signalsOptimized = payload['signalsOptimized'] as int? ?? 4;
+    signalsOptimized =
+        payload['signalsOptimized'] as int? ??
+        payload['affectedNodes'] as int? ??
+        5;
     emergency = EmergencyEvent(
       vehicleId:
           payload['vehicleId'] as String? ??
           payload['ambulance'] as String? ??
-          'A-204',
-      destination: payload['destination'] as String? ?? 'City General Hospital',
-      route: const [
-        'Tech Park',
-        'Civic Center',
-        'Metro Junction',
-        'Hospital Road',
-      ],
+          'SIM-EMERGENCY-01',
+      destination: payload['destination'] as String? ?? 'Simulation Hospital',
+      route: payload['route'] is List
+          ? (payload['route'] as List).whereType<String>().toList()
+          : const ['GF-J01', 'GF-J02', 'GF-J03', 'GF-J04', 'GF-J05'],
       etaSeconds: etaAfterMinutes * 60,
       timeSavedSeconds: (payload['timeSaved'] as int? ?? 4) * 60,
       active: true,
@@ -332,7 +301,7 @@ class TrafficController extends ChangeNotifier {
       );
     }).toList();
     _prependAlert(
-      'Green Corridor Active',
+      'Simulated Corridor Confirmed',
       'Vehicle ${emergency.vehicleId}: ETA reduced ${etaBeforeMinutes}m to ${etaAfterMinutes}m',
       3,
     );
@@ -343,53 +312,6 @@ class TrafficController extends ChangeNotifier {
       'ETA reduced by ${etaBeforeMinutes - etaAfterMinutes} minutes',
       'analytics',
     );
-    notifyListeners();
-  }
-
-  void _seedDemoData() {
-    _applyDashboard(apiService.demoDashboard());
-    _applySignals(apiService.demoSignals());
-    _applyAlerts(apiService.demoAlerts());
-    _applyAnalytics(apiService.demoAnalytics());
-    _applyEvents(apiService.demoEvents());
-    _applyPrediction(apiService.demoPrediction());
-
-    // Override signal names with real city names
-    final cityNames = [
-      'Civic Center',
-      'Hospital Road',
-      'Metro Junction',
-      'Tech Park',
-      'Bridge Way',
-      'South Park',
-    ];
-    signals = List.generate(
-      cityNames.length,
-      (i) => TrafficSignal(
-        id: 'SIG-0${i + 1}',
-        name: cityNames[i],
-        load: 30 + _random.nextInt(40),
-        mode: SignalMode.green,
-      ),
-    );
-
-    wireIntelligence = [
-      const WireIntelligence(
-        source: 'Anakin Wire',
-        timestamp: '2m ago',
-        riskLevel: 'High',
-        message: 'Extreme congestion detected at Metro Junction',
-        type: 'traffic',
-      ),
-      const WireIntelligence(
-        source: 'Weather Monitor',
-        timestamp: '5m ago',
-        riskLevel: 'Moderate',
-        message: 'Heavy rain expected near Civic Center',
-        type: 'weather',
-      ),
-    ];
-
     notifyListeners();
   }
 
@@ -441,14 +363,16 @@ class TrafficController extends ChangeNotifier {
 
   void _applyAnalytics(Map<String, dynamic> payload) {
     int numberValue(Object? value, int fallback) =>
-      value is num ? value.round() : fallback;
+        value is num ? value.round() : fallback;
 
     analytics = {
       'efficiency': numberValue(payload['efficiency'], 84),
       'response_time': numberValue(payload['response_time'], 38),
       'co2_reduction': numberValue(payload['co2_reduction'], 18),
-      'emergencyVehiclesAssisted':
-        numberValue(payload['emergencyVehiclesAssisted'], 127),
+      'emergencyVehiclesAssisted': numberValue(
+        payload['emergencyVehiclesAssisted'],
+        127,
+      ),
       'hoursSaved': numberValue(payload['hoursSaved'], 42),
       'trafficJamsPrevented': numberValue(payload['trafficJamsPrevented'], 32),
     };
@@ -500,19 +424,8 @@ class TrafficController extends ChangeNotifier {
     };
   }
 
-  SignalMode _modeForLoad(int load) {
-    if (load > 80) {
-      return SignalMode.red;
-    }
-    if (load > 50) {
-      return SignalMode.yellow;
-    }
-    return SignalMode.green;
-  }
-
   @override
   void dispose() {
-    _timer?.cancel();
     _reconnectTimer?.cancel();
     _socketSubscription?.cancel();
     super.dispose();

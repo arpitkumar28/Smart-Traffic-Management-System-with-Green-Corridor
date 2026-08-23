@@ -8,6 +8,7 @@ from services.websocket_service import manager
 
 NODE_IDS = ["GF-J01", "GF-J02", "GF-J03", "GF-J04", "GF-J05"]
 SCENARIOS = {"NORMAL", "CONGESTION", "EMERGENCY", "NODE_OFFLINE", "SIGNAL_WARNING"}
+DEMO_ROUTE = NODE_IDS.copy()
 
 
 def _now() -> str:
@@ -25,6 +26,9 @@ class VirtualIoTService:
         ]
         self.nodes: list[dict[str, Any]] = deepcopy(self._normal_nodes)
         self.scenario = "NORMAL"
+        self.demo_status = "IDLE"
+        self.demo_vehicle = "SIM-EMERGENCY-01"
+        self.demo_destination = "Simulation Hospital"
 
     @staticmethod
     def _node(node_id: str, intersection_id: str, name: str, vehicles: int, queue: int, signal: str, phase: str, remaining: int, latitude: float, longitude: float) -> dict[str, Any]:
@@ -46,6 +50,7 @@ class VirtualIoTService:
             "firmwareVersion": "virtual-1.0",
             "sensorStatus": "SIMULATED",
             "signalControllerStatus": "SIMULATED",
+            "coordinationStatus": "STANDBY",
         }
 
     def snapshot(self) -> list[dict[str, Any]]:
@@ -84,6 +89,78 @@ class VirtualIoTService:
 
     async def reset(self) -> list[dict[str, Any]]:
         return await self.apply_scenario("NORMAL")
+
+    def _demo_initial_nodes(self) -> list[dict[str, Any]]:
+        nodes = deepcopy(self._normal_nodes)
+        nodes[0].update(signalState="GREEN", signalPhase="GO")
+        nodes[1].update(signalState="RED", signalPhase="STOP")
+        nodes[2].update(
+            status="WARNING",
+            vehicleCount=42,
+            queueLengthMeters=320,
+            signalState="RED",
+            signalPhase="STOP",
+        )
+        nodes[3].update(signalState="RED", signalPhase="STOP")
+        nodes[4].update(signalState="GREEN", signalPhase="GO")
+        for node in nodes:
+            node["lastUpdated"] = _now()
+        return nodes
+
+    async def prepare_demo(self) -> dict[str, Any]:
+        self.nodes = self._demo_initial_nodes()
+        self.scenario = "EMERGENCY_CORRIDOR_DEMO"
+        self.demo_status = "PREPARED"
+        await self._broadcast()
+        payload = self.demo_snapshot()
+        await manager.broadcast("GREEN_CORRIDOR_PREPARED", payload)
+        return payload
+
+    async def execute_demo(self, failure: str | None = None) -> dict[str, Any]:
+        if failure == "HTTP":
+            raise RuntimeError("Simulation command intentionally rejected")
+        if failure == "TIMEOUT":
+            raise TimeoutError("Simulation command confirmation timed out")
+        if self.demo_status != "PREPARED":
+            raise ValueError("Demo corridor must be prepared before confirmation")
+        offline = next((node for node in self.nodes if node["status"] == "OFFLINE"), None)
+        if offline:
+            raise ValueError(f"Cannot confirm while {offline['nodeId']} is offline")
+
+        self.demo_status = "EXECUTING"
+        sent = self.demo_snapshot()
+        await manager.broadcast("GREEN_CORRIDOR_ACTIVATED", sent)
+        for node in self.nodes:
+            node["coordinationStatus"] = "COORDINATION_ACTIVE"
+            node["signalState"] = "GREEN"
+            node["signalPhase"] = "PRIORITY"
+            node["lastUpdated"] = _now()
+            await self._broadcast([node])
+        self.demo_status = "CONFIRMED"
+        confirmed = self.demo_snapshot()
+        await manager.broadcast("GREEN_CORRIDOR_CONFIRMED", confirmed)
+        return confirmed
+
+    async def reset_demo(self) -> dict[str, Any]:
+        self.nodes = self._demo_initial_nodes()
+        self.scenario = "EMERGENCY_CORRIDOR_DEMO"
+        self.demo_status = "IDLE"
+        await self._broadcast()
+        return self.demo_snapshot()
+
+    def demo_snapshot(self) -> dict[str, Any]:
+        return {
+            "scenario": "EMERGENCY_CORRIDOR_DEMO",
+            "mode": "SIMULATION",
+            "vehicle": self.demo_vehicle,
+            "vehicleType": "Emergency Vehicle",
+            "destination": self.demo_destination,
+            "route": DEMO_ROUTE,
+            "affectedNodes": len(DEMO_ROUTE),
+            "status": self.demo_status,
+            "nodes": self.snapshot(),
+            "timestamp": _now(),
+        }
 
     async def set_offline(self, node_id: str) -> dict[str, Any] | None:
         node = next((item for item in self.nodes if item["nodeId"] == node_id), None)
