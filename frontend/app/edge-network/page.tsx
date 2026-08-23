@@ -1,9 +1,49 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { useEffect, useState } from "react";
-import { Cpu, Radio, RefreshCw, Wifi } from "lucide-react";
+import { Cpu, RefreshCw, Wifi } from "lucide-react";
 import { Shell } from "@/components/Shell";
-import { MetricCard, Meter, PageHeader, Panel, StatusBadge } from "@/components/operations";
-import { fetchSignals, type Signal } from "@/lib/api";
-const fallback: Signal[]=[{id:"GF-EDGE-J01",name:"Malviya Nagar",status:"green",traffic_load:42,lat:0,lng:0},{id:"GF-EDGE-J02",name:"Panch Batti",status:"green",traffic_load:18,lat:0,lng:0},{id:"GF-EDGE-J03",name:"Ajmer Road",status:"yellow",traffic_load:82,lat:0,lng:0},{id:"GF-EDGE-J04",name:"SMS Hospital Rd",status:"green",traffic_load:67,lat:0,lng:0}];
-export default function EdgeNetworkPage(){const[nodes,setNodes]=useState(fallback);const[live,setLive]=useState(false);useEffect(()=>{fetchSignals().then(data=>{if(data.length){setNodes(data.map((s,i)=>({...s,id:`GF-EDGE-${s.id||String(i+1).padStart(3,"0")}`})));setLive(true);}}).catch(()=>undefined)},[]);return <Shell><main className="ops-page"><PageHeader index="07" title="IoT Traffic Network" subtitle="Edge device observability, connectivity, and traffic infrastructure health" actions={<button className="ops-button" onClick={()=>window.location.reload()}><RefreshCw size={13}/>Refresh telemetry</button>}/><div className="ops-grid"><MetricCard label="Registered nodes" value={nodes.length} note={live?"Mapped from live signal API":"Simulation mapping"}/><MetricCard label="Node availability" value={`${nodes.length}/${nodes.length}`} note="Current browser session"/><MetricCard label="Connectivity" value="Connected" tone="green" note="WebSocket-capable architecture"/><MetricCard label="Attention needed" value={nodes.filter(n=>n.traffic_load>75).length} tone="amber" note="High-load junctions"/></div><div className="ops-layout"><Panel title="Device telemetry" subtitle="Signal API is used as the available infrastructure source" className="overflow"><table className="ops-table"><thead><tr><th>IoT node</th><th>Location</th><th>Traffic load</th><th>Link health</th><th>State</th></tr></thead><tbody>{nodes.map((node,i)=>{const load=Math.round(node.traffic_load);const attention=load>75;return <tr key={node.id}><td><strong><Cpu size={12}/> {node.id}</strong><br/><span className="demo-label">{live?"Live infrastructure mapping":"Demo telemetry"}</span></td><td>{node.name}</td><td><div style={{minWidth:100}}><Meter value={load} tone={attention?"amber":"green"}/><span className="demo-label">{load}% sensor load</span></div></td><td><span className="demo-label"><Wifi size={11}/> {attention?"72":"96"}% link</span></td><td><StatusBadge tone={attention?"amber":"green"}>{attention?"Monitor":"Online"}</StatusBadge></td></tr>})}</tbody></table></Panel><Panel title="Network topology" subtitle="Illustrative device relationship"><div className="network-graphic"><svg viewBox="0 0 160 170"><path d="M25 25L70 10L132 25L110 65L145 95L96 120L45 146L20 100L48 74Z"/><path d="M25 25L48 74L20 100M70 10L110 65L96 120M132 25L145 95M48 74L110 65M20 100L45 146L96 120M110 65L145 95"/>{[[25,25],[70,10],[132,25],[110,65],[145,95],[96,120],[45,146],[20,100],[48,74]].map(([cx,cy],i)=><circle key={i} cx={cx} cy={cy} r="6" className={i===3?"amber":"green"}/>)}</svg></div><div className="ops-callout"><b><Radio size={13}/> Connected infrastructure.</b> Device status is shown as simulation telemetry when a dedicated node service is not configured; it does not replace backend APIs.</div></Panel></div></main></Shell>}
+import { MetricCard, PageHeader, Panel, StatusBadge } from "@/components/operations";
+import useRealtime from "@/hooks/useRealtime";
+import { fetchIoTNetwork, resetIoTSimulation, setIoTScenario, type IoTNode } from "@/lib/api";
+
+const scenarios = [["NORMAL", "Normal traffic"], ["CONGESTION", "High congestion"], ["EMERGENCY", "Emergency"], ["NODE_OFFLINE", "Node offline"]] as const;
+const toneFor = (status: IoTNode["status"]): "green" | "amber" | "red" => status === "ONLINE" ? "green" : status === "OFFLINE" ? "red" : "amber";
+
+export default function EdgeNetworkPage() {
+  const [nodes, setNodes] = useState<IoTNode[]>([]);
+  const [scenario, setScenario] = useState("NORMAL");
+  const [selectedId, setSelectedId] = useState("GF-J03");
+  const [busy, setBusy] = useState(false);
+  const { status: realtimeStatus } = useRealtime((type, payload) => {
+    if (type !== "iot.node.update" || typeof payload !== "object" || payload === null) return;
+    const update = payload as Partial<IoTNode> & { nodeId?: string };
+    if (!update.nodeId) return;
+    setNodes((current) => current.map((node) => node.nodeId === update.nodeId ? { ...node, ...update } as IoTNode : node));
+  });
+
+  useEffect(() => { fetchIoTNetwork().then((data) => { setNodes(data.nodes); setScenario(data.scenario); }).catch(() => undefined); }, []);
+
+  async function runScenario(nextScenario: string) {
+    setBusy(true);
+    try { const data = await setIoTScenario(nextScenario); setNodes(data.nodes); setScenario(data.scenario); } finally { setBusy(false); }
+  }
+  async function reset() {
+    setBusy(true);
+    try { const data = await resetIoTSimulation(); setNodes(data.nodes); setScenario(data.scenario); } finally { setBusy(false); }
+  }
+
+  const selected = nodes.find((node) => node.nodeId === selectedId) ?? nodes[0];
+  const online = nodes.filter((node) => node.status === "ONLINE").length;
+  const warnings = nodes.filter((node) => node.status === "WARNING").length;
+
+  return <Shell><main className="ops-page">
+    <PageHeader index="07" title="IoT Traffic Network" subtitle="Five virtual roadside nodes with deterministic simulation telemetry" actions={<button className="ops-button" onClick={() => window.location.reload()}><RefreshCw size={13} /> Refresh telemetry</button>} />
+    <div className="ops-callout"><strong>VIRTUAL IoT LAB</strong> <span>SIMULATION ONLY · Physical hardware is not connected.</span></div>
+    <div className="ops-grid"><MetricCard label="Virtual nodes" value={nodes.length} note="Configured demo network" /><MetricCard label="Availability" value={`${online}/${nodes.length}`} note="Simulation connectivity" /><MetricCard label="Warnings" value={warnings} tone="amber" note={`Scenario: ${scenario}`} /><MetricCard label="Realtime" value={realtimeStatus} tone={realtimeStatus === "LIVE" ? "green" : "amber"} note="Central WebSocket" /></div>
+    <Panel title="Simulation controls" subtitle="Every action updates backend-owned node state and broadcasts telemetry."><div className="ops-button-row">{scenarios.map(([value, label]) => <button key={value} className="ops-button" disabled={busy} onClick={() => runScenario(value)}>{label}</button>)}<button className="ops-button" disabled={busy} onClick={reset}>Reset simulation</button></div></Panel>
+    <div className="ops-layout"><Panel title="Virtual node telemetry" subtitle="Configured demo locations, not real-world measurements." className="overflow"><table className="ops-table"><thead><tr><th>Node</th><th>Intersection</th><th>Vehicles</th><th>Queue</th><th>Signal</th><th>Status</th></tr></thead><tbody>{nodes.map((node) => <tr key={node.nodeId} onClick={() => setSelectedId(node.nodeId)} style={{ cursor: "pointer" }}><td><strong><Cpu size={12} /> {node.nodeId}</strong><br /><span className="demo-label">SIMULATION</span></td><td>{node.intersectionId} · {node.name}</td><td>{node.vehicleCount}</td><td>{node.queueLengthMeters} m</td><td>{node.signalState} · {node.signalPhase}</td><td><StatusBadge tone={toneFor(node.status)}>{node.status}</StatusBadge></td></tr>)}</tbody></table></Panel>
+      {selected && <Panel title="Node details" subtitle="Virtual IoT node contract"><dl className="ops-detail-list"><dt>NODE</dt><dd>{selected.nodeId}</dd><dt>INTERSECTION</dt><dd>{selected.intersectionId}</dd><dt>MODE</dt><dd>SIMULATION</dd><dt>STATUS</dt><dd><StatusBadge tone={toneFor(selected.status)}>{selected.status}</StatusBadge></dd><dt>VEHICLES</dt><dd>{selected.vehicleCount}</dd><dt>QUEUE</dt><dd>{selected.queueLengthMeters} m</dd><dt>SIGNAL</dt><dd>{selected.signalState}</dd><dt>PHASE</dt><dd>{selected.signalPhase} · {selected.phaseRemainingSeconds}s</dd><dt>CONNECTIVITY</dt><dd><Wifi size={12} /> {selected.connectivity}</dd><dt>SENSOR</dt><dd>SIMULATED</dd><dt>CONTROLLER</dt><dd>SIMULATED</dd><dt>LAST UPDATE</dt><dd>{new Date(selected.lastUpdated).toLocaleTimeString()}</dd></dl></Panel>}
+    </div>
+  </main></Shell>;
+}

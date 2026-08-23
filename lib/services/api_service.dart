@@ -34,6 +34,11 @@ class ApiService {
     return jsonDecode(response.body) as List<dynamic>;
   }
 
+  Future<List<dynamic>> getIoTNodes() async {
+    final response = await _request(http.get(_uri('/edge-network')));
+    return (jsonDecode(response.body) as Map<String, dynamic>)['nodes'] as List<dynamic>;
+  }
+
   Future<List<dynamic>> getAlerts() async {
     final response = await _request(http.get(_uri('/alerts')));
     return jsonDecode(response.body) as List<dynamic>;

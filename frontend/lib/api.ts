@@ -25,6 +25,31 @@ export interface Signal {
   lng: number;
 }
 
+export interface IoTNode {
+  nodeId: string;
+  intersectionId: string;
+  name: string;
+  status: "ONLINE" | "OFFLINE" | "WARNING" | "STALE";
+  mode: "SIMULATION" | "LIVE";
+  vehicleCount: number;
+  queueLengthMeters: number;
+  signalState: string;
+  signalPhase: string;
+  phaseRemainingSeconds: number;
+  connectivity: string;
+  latitude: number;
+  longitude: number;
+  lastUpdated: string;
+  sensorStatus: string;
+  signalControllerStatus: string;
+}
+
+export interface IoTNetworkResponse {
+  mode: "SIMULATION" | "LIVE";
+  scenario: string;
+  nodes: IoTNode[];
+}
+
 export interface EmergencyVehicle {
   id: string;
   type: "ambulance" | "fire_brigade" | string;
@@ -96,6 +121,7 @@ export type NormalizedEventType =
   | "analytics.update"
   | "event.created"
   | "alert.update"
+  | "iot.node.update"
   | "unknown"
   | string;
 
@@ -111,6 +137,7 @@ export function normalizeWebSocketEventType(raw: string | undefined): Normalized
   if (normalized.includes("alert")) return "alert.update";
   if (normalized.includes("analytics")) return "analytics.update";
   if (normalized.includes("vehicle") || normalized.includes("ambulance")) return "vehicle.update";
+  if (normalized.includes("iot") || normalized.includes("node_update")) return "iot.node.update";
   if (normalized.includes("event")) return "event.created";
 
   return normalized as NormalizedEventType;
@@ -146,6 +173,21 @@ export async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
 
 export async function fetchSignals(): Promise<Signal[]> {
   const { data } = await api.get<Signal[]>("/signals");
+  return data;
+}
+
+export async function fetchIoTNetwork(): Promise<IoTNetworkResponse> {
+  const { data } = await api.get<IoTNetworkResponse>("/edge-network");
+  return data;
+}
+
+export async function setIoTScenario(scenario: string): Promise<IoTNetworkResponse> {
+  const { data } = await api.post<IoTNetworkResponse>("/edge-network/simulation/scenario", { scenario });
+  return data;
+}
+
+export async function resetIoTSimulation(): Promise<IoTNetworkResponse> {
+  const { data } = await api.post<IoTNetworkResponse>("/edge-network/simulation/reset");
   return data;
 }
 
