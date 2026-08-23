@@ -31,7 +31,7 @@ def test_invalid_ambulance_returns_404():
     assert "Ambulance" in response.json()["detail"]
 
 
-def test_duplicate_corridor_activation_returns_conflict():
+def test_duplicate_corridor_activation_is_idempotent():
     first = client.post(
         "/ambulance/activate",
         json={"ambulanceId": "AMB-102", "destination": "City General Hospital"},
@@ -42,8 +42,9 @@ def test_duplicate_corridor_activation_returns_conflict():
         "/ambulance/activate",
         json={"ambulanceId": "AMB-102", "destination": "City General Hospital"},
     )
-    assert second.status_code == 409
-    assert "already active" in second.json()["detail"].lower()
+    assert second.status_code == 200
+    assert second.json()["status"] == "Green Corridor Activated"
+    assert second.json()["ambulance"] == "AMB-102"
 
 
 def test_prediction_endpoint_explains_action():
