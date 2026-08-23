@@ -3,6 +3,7 @@
 import { Shell } from "@/components/Shell";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { Play, Ambulance, ShieldCheck, Zap, Cpu, Activity } from "lucide-react";
 
 export default function LandingPage() {
@@ -42,8 +43,8 @@ export default function LandingPage() {
             <div className="flex justify-center mb-10">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-                <div className="relative p-6 bg-panel border border-primary/30 shadow-neon rounded-2xl">
-                  <ShieldCheck size={64} className="text-primary" />
+                <div className="relative h-28 w-44 overflow-hidden bg-black border border-primary/30 shadow-neon rounded-2xl">
+                  <Image src="/greenflow-logo.png" alt="GreenFlow smart traffic orchestration logo" fill priority className="object-cover object-center scale-125" />
                 </div>
               </div>
             </div>
@@ -55,6 +56,7 @@ export default function LandingPage() {
             <p className="text-lg md:text-xl lg:text-2xl font-semibold tracking-wide text-text-secondary mb-16 max-w-4xl mx-auto leading-relaxed">
               Smart Traffic Orchestration Platform for Emergency Response and Congestion Prediction
             </p>
+            <span className="inline-block mb-6 rounded border border-warning/30 bg-warning/10 px-3 py-1 text-[10px] font-black tracking-widest text-warning">SIMULATION METRICS</span>
 
             <div className="flex flex-col sm:flex-row gap-5 justify-center items-center mb-20">
               <Link href="/emergency">

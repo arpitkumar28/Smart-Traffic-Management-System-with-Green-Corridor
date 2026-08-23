@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Activity, Ambulance, BarChart3, Gauge, Map, MapPinned, RadioTower, Route, Settings, ShieldCheck, Cpu, TrendingUp } from "lucide-react";
+import { Activity, Ambulance, BarChart3, Gauge, Map, MapPinned, RadioTower, Route, Settings, Cpu, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -30,7 +31,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <header className="min-h-[3.5rem] h-auto py-2 border-b border-border bg-secondary-background/80 backdrop-blur-md flex flex-wrap items-center justify-between px-6 sticky top-0 z-50 gap-4">
           <div className="flex items-center gap-6">
               <Link href="/" className="flex items-center gap-2 mr-4">
-              <ShieldCheck className="text-primary" size={24} />
+              <Image src="/greenflow-logo.png" alt="GreenFlow" width={36} height={36} priority className="h-9 w-9 rounded-full object-contain" />
               <span className="font-black tracking-tighter text-xl">GREENFLOW</span>
             </Link>
           </div>
