@@ -94,7 +94,9 @@ class _EmergencyStandbyView extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton(
-              onPressed: () => context.read<TrafficController>().activateEmergencyMode(),
+              onPressed: context.read<TrafficController>().systemStatus == SystemStatus.live
+                  ? () => _showCommandReview(context)
+                  : null,
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
@@ -109,7 +111,7 @@ class _EmergencyStandbyView extends StatelessWidget {
                   Icon(Icons.bolt, size: 24),
                   SizedBox(width: 12),
                   Text(
-                    'TRIGGER GREEN CORRIDOR',
+                    'PREPARE GREEN CORRIDOR',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1),
                   ),
                 ],
@@ -138,6 +140,40 @@ class _EmergencyStandbyView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _showCommandReview(BuildContext context) async {
+    final controller = context.read<TrafficController>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('REVIEW COMMAND'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Vehicle: ${controller.emergency.vehicleId}'),
+            Text('Destination: ${controller.emergency.destination}'),
+            Text('Route: ${controller.emergency.route.join(' -> ')}'),
+            const SizedBox(height: 12),
+            const Text('The backend will confirm whether coordination can be executed.'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('CANCEL'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('CONFIRM COMMAND'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      await context.read<TrafficController>().activateEmergencyMode();
+    }
   }
 }
 

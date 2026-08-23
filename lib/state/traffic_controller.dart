@@ -15,10 +15,13 @@ enum EmergencyActivationStage {
   active,
 }
 
+enum SystemStatus { live, demo, stale, offline, connecting, reconnecting }
+
 class TrafficController extends ChangeNotifier {
   final ApiService apiService = ApiService();
   final Random _random = Random();
   Timer? _timer;
+  Timer? _reconnectTimer;
   StreamSubscription<Map<String, dynamic>>? _socketSubscription;
 
   int networkFlow = 84;
@@ -31,6 +34,10 @@ class TrafficController extends ChangeNotifier {
   int etaAfterMinutes = 4;
   int signalsOptimized = 4;
   EmergencyActivationStage activationStage = EmergencyActivationStage.none;
+  SystemStatus systemStatus = SystemStatus.connecting;
+  DateTime? lastUpdated;
+  String? errorMessage;
+  String corridorCommandStatus = 'COMMAND PREPARED';
 
   String get networkFlowTrend => '+12%';
   String get vpmTrend => 'up 5%';
@@ -58,9 +65,18 @@ class TrafficController extends ChangeNotifier {
   String aiAction = 'Extend green signal by 12 seconds';
 
   void startDemo() {
-    _seedDemoData();
-    refreshFromApi();
-    _connectWebSocket();
+    if (apiService.isDemoMode) {
+      systemStatus = SystemStatus.demo;
+      _seedDemoData();
+      _startDemoSimulation();
+    } else {
+      systemStatus = SystemStatus.connecting;
+      refreshFromApi();
+    }
+    if (!apiService.isDemoMode) _connectWebSocket();
+  }
+
+  void _startDemoSimulation() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 3), (_) {
       networkFlow = (74 + _random.nextInt(20)).clamp(0, 100);
@@ -125,6 +141,10 @@ class TrafficController extends ChangeNotifier {
   }
 
   Future<void> refreshFromApi() async {
+    if (apiService.isDemoMode) return;
+    systemStatus = SystemStatus.connecting;
+    errorMessage = null;
+    notifyListeners();
     try {
       final dashboard = await apiService.getDashboard();
       final signalRows = await apiService.getSignals();
@@ -138,13 +158,25 @@ class TrafficController extends ChangeNotifier {
       _applyAnalytics(analyticsPayload);
       _applyEvents(eventRows);
       _applyPrediction(predictionPayload);
+      systemStatus = SystemStatus.live;
+      lastUpdated = DateTime.now();
       notifyListeners();
     } catch (_) {
-      _seedDemoData();
+      systemStatus = lastUpdated == null ? SystemStatus.offline : SystemStatus.stale;
+      errorMessage = 'Unable to load live traffic data. Retry when connected.';
+      notifyListeners();
     }
   }
 
   Future<void> activateEmergencyMode() async {
+    if (apiService.isDemoMode || systemStatus != SystemStatus.live) {
+      corridorCommandStatus = 'COMMAND BLOCKED OFFLINE';
+      errorMessage = 'Operational commands require a live backend connection.';
+      notifyListeners();
+      return;
+    }
+    if (activationStage != EmergencyActivationStage.none) return;
+    corridorCommandStatus = 'COMMAND SENT';
     activationStage = EmergencyActivationStage.detecting;
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 500));
@@ -166,18 +198,16 @@ class TrafficController extends ChangeNotifier {
         ambulanceId: emergency.vehicleId,
         destination: emergency.destination,
       );
+      if (response['status'] != 'Green Corridor Activated') {
+        throw const ApiException(null, 'Backend did not confirm corridor activation');
+      }
       _applyGreenCorridor(response);
       await refreshFromApi();
     } catch (_) {
-      _applyGreenCorridor({
-        'status': 'Green Corridor Activated',
-        'ambulance': 'A-204',
-        'vehicleId': 'A-204',
-        'etaBefore': 8,
-        'etaAfter': 4,
-        'timeSaved': 4,
-        'signalsOptimized': 4,
-      });
+      activationStage = EmergencyActivationStage.none;
+      corridorCommandStatus = 'COMMAND STATUS UNKNOWN';
+      errorMessage = 'Command status could not be confirmed. Check the backend before retrying.';
+      notifyListeners();
     }
   }
 
@@ -213,22 +243,47 @@ class TrafficController extends ChangeNotifier {
   }
 
   void _connectWebSocket() {
+    _reconnectTimer?.cancel();
     _socketSubscription?.cancel();
+    systemStatus = SystemStatus.connecting;
+    notifyListeners();
     try {
       _socketSubscription = apiService.updateStream.listen(
         _handleSocketEvent,
-        onError: (_) {},
+        onError: (_) {
+          systemStatus = SystemStatus.offline;
+          notifyListeners();
+          _scheduleReconnect();
+        },
+        onDone: _scheduleReconnect,
         cancelOnError: false,
       );
     } catch (_) {
       _socketSubscription = null;
+      systemStatus = SystemStatus.offline;
+      notifyListeners();
+      _scheduleReconnect();
     }
   }
 
+  void _scheduleReconnect() {
+    if (apiService.isDemoMode || _reconnectTimer != null) return;
+    systemStatus = SystemStatus.reconnecting;
+    notifyListeners();
+    _reconnectTimer = Timer(const Duration(seconds: 2), () {
+      _reconnectTimer = null;
+      _connectWebSocket();
+    });
+  }
+
   void _handleSocketEvent(Map<String, dynamic> message) {
+    systemStatus = SystemStatus.live;
+    lastUpdated = DateTime.now();
     final type = message['type'] as String? ?? '';
     final payload = message['payload'];
-    if (type == 'green_corridor' && payload is Map<String, dynamic>) {
+    if ((type == 'green_corridor' || type == 'GREEN_CORRIDOR_ACTIVATED' || type == 'corridor.activated') &&
+        payload is Map<String, dynamic>) {
+      if (payload['status'] != 'Green Corridor Activated') return;
       _applyGreenCorridor(payload);
     }
     if (type == 'signal_updates' ||
@@ -243,8 +298,11 @@ class TrafficController extends ChangeNotifier {
   }
 
   void _applyGreenCorridor(Map<String, dynamic> payload) {
+    if (payload['status'] != 'Green Corridor Activated') return;
     emergencyActive = true;
     activationStage = EmergencyActivationStage.active;
+    corridorCommandStatus = 'COMMAND CONFIRMED';
+    errorMessage = null;
     etaBeforeMinutes = payload['etaBefore'] as int? ?? 8;
     etaAfterMinutes = payload['etaAfter'] as int? ?? 4;
     signalsOptimized = payload['signalsOptimized'] as int? ?? 4;
@@ -273,15 +331,6 @@ class TrafficController extends ChangeNotifier {
         mode: isRouteSignal ? SignalMode.priority : signal.mode,
       );
     }).toList();
-    analytics = {
-      ...analytics,
-      'efficiency': max((analytics['efficiency'] as int? ?? 84), 91),
-      'response_time': max((analytics['response_time'] as int? ?? 38), 52),
-      'emergencyVehiclesAssisted':
-          (analytics['emergencyVehiclesAssisted'] as int? ?? 127) + 1,
-      'trafficJamsPrevented':
-          (analytics['trafficJamsPrevented'] as int? ?? 32) + 1,
-    };
     _prependAlert(
       'Green Corridor Active',
       'Vehicle ${emergency.vehicleId}: ETA reduced ${etaBeforeMinutes}m to ${etaAfterMinutes}m',
@@ -464,6 +513,7 @@ class TrafficController extends ChangeNotifier {
   @override
   void dispose() {
     _timer?.cancel();
+    _reconnectTimer?.cancel();
     _socketSubscription?.cancel();
     super.dispose();
   }

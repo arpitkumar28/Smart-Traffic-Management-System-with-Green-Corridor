@@ -23,20 +23,76 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: NeonBackground(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth > 1024) {
-              return const _DesktopDashboard();
-            } else if (constraints.maxWidth > 600) {
-              return const _TabletDashboard();
-            } else {
-              return _MobileDashboard(
-                currentIndex: index,
-                onIndexChanged: (i) => setState(() => index = i),
-              );
-            }
-          },
+      body: Column(
+        children: [
+          const _SystemStatusBanner(),
+          Expanded(
+            child: NeonBackground(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth > 1024) {
+                    return const _DesktopDashboard();
+                  } else if (constraints.maxWidth > 600) {
+                    return const _TabletDashboard();
+                  } else {
+                    return _MobileDashboard(
+                      currentIndex: index,
+                      onIndexChanged: (i) => setState(() => index = i),
+                    );
+                  }
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SystemStatusBanner extends StatelessWidget {
+  const _SystemStatusBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.watch<TrafficController>();
+    final label = switch (controller.systemStatus) {
+      SystemStatus.live => 'LIVE CONNECTED',
+      SystemStatus.demo => 'SIMULATION - Demo data',
+      SystemStatus.stale => 'STALE - Last update is not current',
+      SystemStatus.offline => 'OFFLINE - Live data unavailable',
+      SystemStatus.connecting => 'CONNECTING',
+      SystemStatus.reconnecting => 'RECONNECTING',
+    };
+    final color = controller.systemStatus == SystemStatus.live
+        ? const Color(0xFF00FF9D)
+        : Colors.orangeAccent;
+
+    return Material(
+      color: const Color(0xFF07171B),
+      child: SafeArea(
+        bottom: false,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline, size: 16, color: color),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  controller.errorMessage ?? label,
+                  style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700),
+                ),
+              ),
+              if (controller.systemStatus == SystemStatus.offline ||
+                  controller.systemStatus == SystemStatus.stale)
+                TextButton(
+                  onPressed: controller.refreshFromApi,
+                  child: const Text('RETRY'),
+                ),
+            ],
+          ),
         ),
       ),
     );
